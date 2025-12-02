@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
-import { createTravelerInput } from "./user.interface";
 import { prisma } from "../../../lib/prisma";
 import { fileUploader } from "../../helper/fileUploader";
 import { Request } from "express";
+import config from "../../config";
 
 
 const createTraveler = async (req: Request) => {
@@ -13,7 +13,7 @@ const createTraveler = async (req: Request) => {
     }
 
     // const { password, traveler } = req.body;
-     const hashPassword = await bcrypt.hash(req.body.password, 10);
+    const hashPassword = await bcrypt.hash(req.body.password, config.bcrypt_salt_rounds);
 
     const result = await prisma.$transaction(async (tnx: any) => {
         // Create user
