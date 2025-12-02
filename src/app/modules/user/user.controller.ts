@@ -5,7 +5,7 @@ import sendResponse from "../../shared/sendResponse";
 import { UserService } from "./user.service";
 
 const createTraveler = catchAsync(async (req: Request, res: Response) => {
-      const result = await UserService.createTraveler(req.body);
+      const result = await UserService.createTraveler(req);
     console.log(result)
 
     sendResponse(res, {
