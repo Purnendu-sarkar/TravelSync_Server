@@ -8,27 +8,25 @@ import { Request } from "express";
 const createTraveler = async (req: Request) => {
     if (req.file) {
         const uploadResult = await fileUploader.uploadToCloudinary(req.file);
+        req.body.traveler.profilePhoto = uploadResult?.secure_url
         console.log(uploadResult)
     }
 
-    const { password, traveler } = req.body;
-    const hashPassword = await bcrypt.hash(password, 10);
+    // const { password, traveler } = req.body;
+     const hashPassword = await bcrypt.hash(req.body.password, 10);
 
     const result = await prisma.$transaction(async (tnx: any) => {
         // Create user
         await tnx.user.create({
             data: {
-                email: traveler.email,
+                email: req.body.traveler.email,
                 password: hashPassword
             }
         });
 
         // Create traveler profile
         return await tnx.traveler.create({
-            data: {
-                name: traveler.name,
-                email: traveler.email
-            }
+            data: req.body.traveler
         })
     })
 
