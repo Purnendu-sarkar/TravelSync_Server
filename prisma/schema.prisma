@@ -13,9 +13,84 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserRole {
+  TRAVELER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+// =======================
+//  USERS Model
+// =======================
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  createdAt DateTime @default(now())
+  id                 String     @id @default(uuid())
+  email              String     @unique
+  password           String
+  role               UserRole   @default(TRAVELER)
+  needPasswordChange Boolean    @default(false)
+  status             UserStatus @default(ACTIVE)
+  isDeleted          Boolean    @default(false)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  // Relations
+  traveler Traveler?
+  admin    Admin?
+
+  @@map("users")
+}
+
+// =======================
+//  TRAVELER Model
+// =======================
+model Traveler {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  name             String?
+  email            String?
+  bio              String?
+  gender           Gender
+  interests        String[]
+  location         String?
+  visitedCountries String[]
+  profilePhoto     String?
+  isDeleted        Boolean  @default(false)
+  isVerified       Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relation
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("travelers")
+}
+
+// =======================
+//  ADMIN Model
+// =======================
+model Admin {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  name          String?
+  email         String?
+  profilePhoto  String?
+  contactNumber String?
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relation
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("admins")
 }
