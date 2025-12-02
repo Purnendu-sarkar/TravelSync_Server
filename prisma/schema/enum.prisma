@@ -1,0 +1,15 @@
+enum UserRole {
+    TRAVELER
+    ADMIN
+}
+
+enum UserStatus {
+    ACTIVE
+    INACTIVE
+    BLOCKED
+}
+
+enum Gender {
+    MALE
+    FEMALE
+}

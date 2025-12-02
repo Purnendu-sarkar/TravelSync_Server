@@ -1,33 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
-}
-
-datasource db {
-  provider = "postgresql"
-}
-
-enum UserRole {
-  TRAVELER
-  ADMIN
-}
-
-enum UserStatus {
-  ACTIVE
-  INACTIVE
-  BLOCKED
-}
-
-enum Gender {
-  MALE
-  FEMALE
-}
 
 // =======================
 //  USERS Model
@@ -44,8 +14,8 @@ model User {
   updatedAt          DateTime   @updatedAt
 
   // Relations
-  traveler Traveler?
-  admin    Admin?
+  travelers Traveler?
+  admins    Admin?
 
   @@map("users")
 }
@@ -55,9 +25,8 @@ model User {
 // =======================
 model Traveler {
   id               String   @id @default(uuid())
-  userId           String   @unique
   name             String?
-  email            String?
+  email            String   @unique
   bio              String?
   gender           Gender
   interests        String[]
@@ -70,7 +39,7 @@ model Traveler {
   updatedAt        DateTime @updatedAt
 
   // Relation
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [email], references: [email])
 
   @@map("travelers")
 }
@@ -80,9 +49,8 @@ model Traveler {
 // =======================
 model Admin {
   id            String   @id @default(uuid())
-  userId        String   @unique
   name          String?
-  email         String?
+  email         String   @unique
   profilePhoto  String?
   contactNumber String?
   isDeleted     Boolean  @default(false)
@@ -90,7 +58,7 @@ model Admin {
   updatedAt     DateTime @updatedAt
 
   // Relation
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [email], references: [email])
 
   @@map("admins")
 }
