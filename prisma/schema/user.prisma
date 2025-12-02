@@ -28,7 +28,7 @@ model Traveler {
   name             String?
   email            String   @unique
   bio              String?
-  gender           Gender
+  gender           Gender?
   interests        String[]
   location         String?
   visitedCountries String[]

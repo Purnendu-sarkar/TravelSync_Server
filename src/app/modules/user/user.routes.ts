@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post(
     "/create-traveler",
-    UserController.createPatient
+    UserController.createTraveler
 
 )
 

@@ -28,7 +28,7 @@ CREATE TABLE "travelers" (
     "name" TEXT,
     "email" TEXT NOT NULL,
     "bio" TEXT,
-    "gender" "Gender" NOT NULL,
+    "gender" "Gender",
     "interests" TEXT[],
     "location" TEXT,
     "visitedCountries" TEXT[],
