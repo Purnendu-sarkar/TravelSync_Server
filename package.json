@@ -17,7 +17,8 @@
     "express": "^5.1.0",
     "http-status": "^2.1.0",
     "multer": "^2.0.2",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
