@@ -18,24 +18,19 @@ const createTraveler = catchAsync(async (req: Request, res: Response) => {
 })
 
 const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
+    const filters = pick(req.query, ["status", "role", "email", "searchTerm"])
     const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"])
 
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const searchTerm = req.query.searchTerm as string | undefined;
-    const sortBy = req.query.sortBy as string | undefined;
-    const sortOrder = req.query.sortOrder === "asc" || req.query.sortOrder === "desc"
-        ? req.query.sortOrder
-        : "desc";
+    // const page = Number(req.query.page) || 1;
+    // const limit = Number(req.query.limit) || 10;
+    // const searchTerm = req.query.searchTerm as string | undefined;
+    // const sortBy = req.query.sortBy as string | undefined;
+    // const sortOrder = req.query.sortOrder === "asc" || req.query.sortOrder === "desc"
+    //     ? req.query.sortOrder
+    //     : "desc";
 
 
-    const result = await UserService.getAllFromDB({
-        page,
-        limit,
-        searchTerm,
-        sortBy,
-        sortOrder,
-    });
+   const result = await UserService.getAllFromDB(filters, options);
 
     sendResponse(res, {
         statusCode: 201,

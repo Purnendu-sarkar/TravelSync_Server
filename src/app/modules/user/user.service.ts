@@ -3,6 +3,9 @@ import { prisma } from "../../../lib/prisma";
 import { fileUploader } from "../../helper/fileUploader";
 import { Request } from "express";
 import config from "../../config";
+import { paginationHelper } from "../../helper/paginationHelper";
+import { Prisma } from "../../../generated/prisma/client";
+import { userSearchableFields } from "./user.constant";
 
 
 const createTraveler = async (req: Request) => {
@@ -36,44 +39,59 @@ const createTraveler = async (req: Request) => {
 
 
 
-const getAllFromDB = async ({
-    page,
-    limit,
-    searchTerm,
-    sortBy,
-    sortOrder,
-}: {
-    page: number;
-    limit: number;
-    searchTerm?: string;
-    sortBy?: string;
-    sortOrder?: "asc" | "desc";
-}) => {
-    const skip = (page - 1) * limit;
+const getAllFromDB = async (params: any, options: any) => {
+    const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options)
+    const { searchTerm, ...filterData } = params;
+
+    const andConditions: Prisma.UserWhereInput[] = [];
+
+    if (searchTerm) {
+        andConditions.push({
+            OR: userSearchableFields.map(field => ({
+                [field]: {
+                    contains: searchTerm,
+                    mode: "insensitive"
+                }
+            }))
+        })
+    }
+
+    if (Object.keys(filterData).length > 0) {
+        andConditions.push({
+            AND: Object.keys(filterData).map(key => ({
+                [key]: {
+                    equals: (filterData as any)[key]
+                }
+            }))
+        })
+    }
+
+    const whereConditions: Prisma.UserWhereInput = andConditions.length > 0 ? {
+        AND: andConditions
+    } : {}
+
     const result = await prisma.user.findMany({
         skip,
         take: limit,
 
-        where: searchTerm
-            ? {
-                email: {
-                    contains: searchTerm,
-                    mode: "insensitive",
-                },
-            }
-            : {},
-
-        orderBy: sortBy
-            ? {
-                [sortBy]: sortOrder || "desc",
-            }
-            : {
-                createdAt: "desc",
-            },
+        where: whereConditions,
+        orderBy: {
+            [sortBy]: sortOrder
+        }
     });
-    return result;
-}
 
+    const total = await prisma.user.count({
+        where: whereConditions
+    });
+    return {
+        meta: {
+            page,
+            limit,
+            total
+        },
+        data: result
+    };
+}
 export const UserService = {
     createTraveler,
     getAllFromDB
