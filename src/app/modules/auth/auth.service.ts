@@ -5,6 +5,7 @@ import { prisma } from "../../../lib/prisma";
 import { UserStatus } from "../../../generated/prisma/enums";
 import config from "../../config";
 import ApiError from "../../errors/ApiError";
+import emailSender from './emailSender';
 
 type LoginPayload = { email: string; password: string };
 
@@ -92,10 +93,40 @@ const changePassword = async (user: any, payload: { oldPassword: string; newPass
     return { message: "Password changed successfully" };
 };
 
+const forgotPassword = async (payload: { email: string }) => {
+  const user = await prisma.user.findUniqueOrThrow({ where: { email: payload.email } });
+
+  if (user.status !== UserStatus.ACTIVE) {
+    throw new ApiError(httpStatus.FORBIDDEN, "User is not active");
+  }
+
+  const resetToken = jwtHelper.generateToken(
+    { email: user.email, role: user.role},
+    config.reset_pass_secret,
+    config.reset_pass_expires
+  );
+
+  const resetLink = `${config.reset_pass_link}?token=${resetToken}&id=${user.id}`;
+
+  const html = `
+    <div>
+      <p>Hi ${user.email},</p>
+      <p>Click the button below to reset your password. The link expires in ${config.reset_pass_expires}.</p>
+      <a href="${resetLink}" style="display:inline-block;padding:10px 16px;background:#2563eb;color:white;border-radius:6px;text-decoration:none;">Reset Password</a>
+      <p>If you didn't request this, ignore this email.</p>
+    </div>
+  `;
+
+  await emailSender(user.email, "Reset your TravelBuddy password", html);
+
+  return { message: "Reset link sent to your email" };
+};
+
 
 export const AuthService = {
     login,
     getMe,
     refreshToken,
-    changePassword
+    changePassword,
+    forgotPassword
 }
