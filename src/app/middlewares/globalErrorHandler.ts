@@ -4,7 +4,7 @@ import { Prisma } from "../../generated/prisma/client";
 
 const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
 
-    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+    let statusCode: number = err.statusCode || httpStatus.INTERNAL_SERVER_ERROR;
     let success = false;
     let message = err.message || "Something went wrong!";
     let error = err;
@@ -14,6 +14,7 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
             // Unique constraint failed
             message = "Duplicate value detected. This record already exists.";
             error = err.meta;
+            statusCode = httpStatus.CONFLICT;
         }
 
         if (err.code === "P1000") {
@@ -21,6 +22,7 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
             message =
                 "Database authentication failed. Please check your database credentials or connection settings.";
             error = err.meta;
+            statusCode = httpStatus.BAD_GATEWAY;
         }
 
         if (err.code === "P2003") {
@@ -28,6 +30,7 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
             message =
                 "Operation failed due to an invalid or missing related record. Please check your foreign key references.";
             error = err.meta;
+            statusCode = httpStatus.BAD_REQUEST;
         }
 
         if (err.code === "P2025") {
@@ -35,18 +38,23 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
             message =
                 `Requested ${err.meta?.modelName || "record"} not found. Please verify the provided ID or query parameters.`;
             error = err.meta;
+            statusCode = httpStatus.NOT_FOUND;
         }
     } else if (err instanceof Prisma.PrismaClientValidationError) {
         message =
             "Invalid data input. Please ensure all required fields are correctly formatted.";
         error = err.message;
+        statusCode = httpStatus.BAD_REQUEST;
     } else if (err instanceof Prisma.PrismaClientInitializationError) {
         message =
             "Failed to initialize database connection. Please verify your database server is running.";
         error = err.message;
+        statusCode = httpStatus.SERVICE_UNAVAILABLE;
     } else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
         message = "Unknown Prisma error occurred!",
             error = err.message
+        error = err.message;
+        statusCode = httpStatus.INTERNAL_SERVER_ERROR;
     }
 
 
