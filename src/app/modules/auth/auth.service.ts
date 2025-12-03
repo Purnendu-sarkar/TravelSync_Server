@@ -37,7 +37,23 @@ const login = async (payload: LoginPayload) => {
     return { accessToken, refreshToken, needPasswordChange: user.needPasswordChange };
 };
 
+const getMe = async (session: any) => {
+    const token = session.accessToken;
+    if (!token) throw new ApiError(httpStatus.UNAUTHORIZED, "No access token");
+
+    const decoded: any = jwtHelper.verifyToken(token, config.jwt_access_secret);
+    const user = await prisma.user.findUniqueOrThrow({ where: { email: decoded.email } });
+
+    return {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        needPasswordChange: user.needPasswordChange,
+        status: user.status,
+    };
+};
 
 export const AuthService = {
-    login
+    login,
+    getMe,
 }
