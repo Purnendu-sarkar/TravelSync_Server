@@ -53,7 +53,33 @@ const getMe = async (session: any) => {
     };
 };
 
+const refreshToken = async (token: string | undefined) => {
+    if (!token) throw new ApiError(httpStatus.UNAUTHORIZED, "No refresh token");
+
+    let decoded: any;
+    try {
+        decoded = jwtHelper.verifyToken(token, config.jwt_refresh_secret);
+    } catch (err) {
+        throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid refresh token");
+    }
+
+    const user = await prisma.user.findUniqueOrThrow({ where: { email: decoded.email } });
+    if (user.status !== UserStatus.ACTIVE) {
+        throw new ApiError(httpStatus.FORBIDDEN, "User is not active");
+    }
+
+    const accessToken = jwtHelper.generateToken(
+        { email: user.email, role: user.role },
+        config.jwt_access_secret,
+        config.jwt_access_expires
+    );
+
+    return { accessToken, needPasswordChange: user.needPasswordChange };
+};
+
+
 export const AuthService = {
     login,
     getMe,
+    refreshToken
 }

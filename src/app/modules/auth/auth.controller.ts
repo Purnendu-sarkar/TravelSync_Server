@@ -44,7 +44,23 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const refreshToken = catchAsync(async (req: Request, res: Response) => {
+    const token = req.cookies?.refreshToken;
+    const result = await AuthService.refreshToken(token);
+    res.cookie("accessToken", result.accessToken, {
+        ...cookieOptions,
+        maxAge: 1000 * 60 * 60,
+    });
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Access token generated successfully",
+        data: null,
+    });
+});
+
 export const AuthController = {
     login,
-    getMe
+    getMe,
+    refreshToken
 }
