@@ -4,8 +4,10 @@ import { fileUploader } from "../../helper/fileUploader";
 import { Request } from "express";
 import config from "../../config";
 import { paginationHelper } from "../../helper/paginationHelper";
-import { Prisma } from "../../../generated/prisma/client";
+import { Prisma, UserRole, UserStatus } from "../../../generated/prisma/client";
 import { userSearchableFields } from "./user.constant";
+import { IJWTPayload } from "../../types/common";
+import { UpdateTravelerProfileInput } from "./user.interface";
 
 
 const createTraveler = async (req: Request) => {
@@ -38,8 +40,6 @@ const createTraveler = async (req: Request) => {
 
     return result;
 }
-
-
 
 const getAllFromDB = async (params: any, options: any) => {
     const { page, limit, skip, sortBy, sortOrder } =
@@ -92,7 +92,45 @@ const getAllFromDB = async (params: any, options: any) => {
         data: result
     };
 };
+
+const getMyProfile = async (user: IJWTPayload) => {
+    const userInfo = await prisma.user.findUniqueOrThrow({
+        where: { email: user.email, status: UserStatus.ACTIVE },
+        omit: {
+            password: true,
+            needPasswordChange: true,
+            createdAt: true,
+            updatedAt: true
+        }
+    });
+    let profileData;
+
+    if (userInfo.role === UserRole.TRAVELER) {
+        profileData = await prisma.traveler.findUnique({
+            where: {
+                email: userInfo.email
+            },
+            omit: {
+                createdAt: true,
+                updatedAt: true
+            }
+        })
+    } else if (userInfo.role === UserRole.ADMIN) {
+        profileData = await prisma.admin.findUnique({
+            where: {
+                email: userInfo.email
+            }
+        })
+    }
+
+    return {
+        ...userInfo,
+        ...profileData
+    };
+};
+
 export const UserService = {
     createTraveler,
-    getAllFromDB
+    getAllFromDB,
+    getMyProfile
 }

@@ -14,6 +14,12 @@ router.get(
     UserController.getAllFromDB
 )
 
+router.get(
+    "/me",
+    auth(UserRole.TRAVELER, UserRole.ADMIN),
+    UserController.getMyProfile
+);
+
 router.post(
     "/create-traveler",
     fileUploader.upload.single("file"),

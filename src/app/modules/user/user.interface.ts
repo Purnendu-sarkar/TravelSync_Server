@@ -1,10 +1,12 @@
+import { Gender } from "../../../generated/prisma/enums";
+
 export type CreateTravelerInput = {
     password: string;
     traveler: {
         name: string;
         email: string;
         bio?: string;
-        gender?: string;
+        gender?: Gender;
         interests?: string[];
         location?: string;
         visitedCountries?: string[];
@@ -15,7 +17,7 @@ export type CreateTravelerInput = {
 export type UpdateTravelerProfileInput = {
     name?: string;
     bio?: string;
-    gender?: string;
+    gender?: Gender;
     interests?: string[];
     location?: string;
     visitedCountries?: string[];
