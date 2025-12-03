@@ -3,6 +3,13 @@ import { Request, Response } from "express";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
 import { AuthService } from "./auth.service";
+import config from "../../config";
+
+const cookieOptions = {
+    httpOnly: true,
+    secure: config.node_env === "production",
+    sameSite: config.node_env === "production" ? "none" as const : "lax" as const,
+};
 
 
 const login = catchAsync(async (req: Request, res: Response) => {
@@ -10,27 +17,21 @@ const login = catchAsync(async (req: Request, res: Response) => {
     const { accessToken, refreshToken, needPasswordChange } = result;
 
     res.cookie("accessToken", accessToken, {
-        secure: true,
-        httpOnly: true,
-        sameSite: "none",
-        maxAge: 1000 * 60 * 60
-    })
+        ...cookieOptions,
+        maxAge: 1000 * 60 * 60, // 1 hour
+    });
     res.cookie("refreshToken", refreshToken, {
-        secure: true,
-        httpOnly: true,
-        sameSite: "none",
-        maxAge: 1000 * 60 * 60 * 24 * 90
-    })
+        ...cookieOptions,
+        maxAge: 1000 * 60 * 60 * 24 * 90, // 90 days
+    });
 
     sendResponse(res, {
-        statusCode: 201,
+        statusCode: 200,
         success: true,
-        message: "User logged In successfully!",
-        data: {
-            needPasswordChange
-        }
-    })
-})
+        message: "User logged in successfully!",
+        data: { needPasswordChange },
+    });
+});
 
 export const AuthController = {
     login
