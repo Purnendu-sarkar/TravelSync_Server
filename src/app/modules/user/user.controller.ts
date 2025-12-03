@@ -17,7 +17,9 @@ const createTraveler = catchAsync(async (req: Request, res: Response) => {
 })
 
 const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
-    const result = await UserService.getAllFromDB();
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const result = await UserService.getAllFromDB({ page: Number(page), limit: Number(limit) });
 
     sendResponse(res, {
         statusCode: 201,
