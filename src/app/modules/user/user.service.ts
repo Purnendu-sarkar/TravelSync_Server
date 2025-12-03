@@ -139,10 +139,28 @@ const updateMyProfile = async (
     });
 };
 
+const changeUserStatus = async (id: string, payload: { status: UserStatus }) => {
+    return prisma.user.update({
+        where: { id },
+        data: payload,
+
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            status: true,
+            updatedAt: true,
+            travelers: true,
+        },
+
+    });
+};
+
 
 export const UserService = {
     createTraveler,
     getAllFromDB,
     getMyProfile,
-    updateMyProfile
+    updateMyProfile,
+    changeUserStatus
 }

@@ -26,6 +26,12 @@ router.patch(
     UserController.updateMyProfile
 );
 
+router.patch(
+    "/:id/status",
+    auth(UserRole.ADMIN),
+    UserController.changeUserStatus
+);
+
 router.post(
     "/create-traveler",
     fileUploader.upload.single("file"),
