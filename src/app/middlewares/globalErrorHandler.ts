@@ -36,6 +36,17 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
                 `Requested ${err.meta?.modelName || "record"} not found. Please verify the provided ID or query parameters.`;
             error = err.meta;
         }
+    } else if (err instanceof Prisma.PrismaClientValidationError) {
+        message =
+            "Invalid data input. Please ensure all required fields are correctly formatted.";
+        error = err.message;
+    } else if (err instanceof Prisma.PrismaClientInitializationError) {
+        message =
+            "Failed to initialize database connection. Please verify your database server is running.";
+        error = err.message;
+    } else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
+        message = "Unknown Prisma error occurred!",
+            error = err.message
     }
 
 
