@@ -1,4 +1,3 @@
-
 import express, { NextFunction, Request, Response } from "express"
 import { UserController } from "./user.controller";
 import { fileUploader } from "../../helper/fileUploader";
@@ -11,7 +10,7 @@ const router = express.Router();
 
 router.get(
     "/",
-    auth(UserRole.TRAVELER),
+    auth(UserRole.ADMIN),
     UserController.getAllFromDB
 )
 

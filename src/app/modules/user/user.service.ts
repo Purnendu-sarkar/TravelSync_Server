@@ -42,7 +42,9 @@ const createTraveler = async (req: Request) => {
 
 
 const getAllFromDB = async (params: any, options: any) => {
-    const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options)
+    const { page, limit, skip, sortBy, sortOrder } =
+        paginationHelper.calculatePagination(options);
+
     const { searchTerm, ...filterData } = params;
 
     const andConditions: Prisma.UserWhereInput[] = [];
@@ -55,45 +57,41 @@ const getAllFromDB = async (params: any, options: any) => {
                     mode: "insensitive"
                 }
             }))
-        })
+        });
     }
 
     if (Object.keys(filterData).length > 0) {
         andConditions.push({
             AND: Object.keys(filterData).map(key => ({
                 [key]: {
-                    equals: (filterData as any)[key]
+                    equals: filterData[key]
                 }
             }))
-        })
+        });
     }
 
-    const whereConditions: Prisma.UserWhereInput = andConditions.length > 0 ? {
-        AND: andConditions
-    } : {}
+    const whereConditions: Prisma.UserWhereInput =
+        andConditions.length > 0 ? { AND: andConditions } : {};
 
     const result = await prisma.user.findMany({
         skip,
         take: limit,
-
         where: whereConditions,
         orderBy: {
-            [sortBy]: sortOrder
-        }
+            [sortBy]: sortOrder,
+        },
+        // include: {
+        //     traveler: true,
+        // }
     });
 
-    const total = await prisma.user.count({
-        where: whereConditions
-    });
+    const total = await prisma.user.count({ where: whereConditions });
+
     return {
-        meta: {
-            page,
-            limit,
-            total
-        },
+        meta: { page, limit, total },
         data: result
     };
-}
+};
 export const UserService = {
     createTraveler,
     getAllFromDB

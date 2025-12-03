@@ -1,9 +1,9 @@
-
 import { Request, Response } from "express";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
 import { UserService } from "./user.service";
 import pick from "../../helper/pick";
+import { userFilterableFields } from "./user.constant";
 
 const createTraveler = catchAsync(async (req: Request, res: Response) => {
     const result = await UserService.createTraveler(req);
@@ -18,27 +18,18 @@ const createTraveler = catchAsync(async (req: Request, res: Response) => {
 })
 
 const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
-    const filters = pick(req.query, ["status", "role", "email", "searchTerm"])
-    const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"])
-
-    // const page = Number(req.query.page) || 1;
-    // const limit = Number(req.query.limit) || 10;
-    // const searchTerm = req.query.searchTerm as string | undefined;
-    // const sortBy = req.query.sortBy as string | undefined;
-    // const sortOrder = req.query.sortOrder === "asc" || req.query.sortOrder === "desc"
-    //     ? req.query.sortOrder
-    //     : "desc";
-
+    const filters = pick(req.query, userFilterableFields);
+    const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
 
     const result = await UserService.getAllFromDB(filters, options);
 
     sendResponse(res, {
-        statusCode: 201,
+        statusCode: 200,
         success: true,
-        message: "User retrieved successfully!✅",
+        message: "Users retrieved successfully!✅",
         data: result
-    })
-})
+    });
+});
 
 
 export const UserController = {
