@@ -40,10 +40,14 @@ const getAllFromDB = async ({
     page,
     limit,
     searchTerm,
+    sortBy,
+    sortOrder,
 }: {
     page: number;
     limit: number;
     searchTerm?: string;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
 }) => {
     const skip = (page - 1) * limit;
     const result = await prisma.user.findMany({
@@ -57,7 +61,15 @@ const getAllFromDB = async ({
                     mode: "insensitive",
                 },
             }
-            : {}
+            : {},
+
+        orderBy: sortBy
+            ? {
+                [sortBy]: sortOrder || "desc",
+            }
+            : {
+                createdAt: "desc",
+            },
     });
     return result;
 }
