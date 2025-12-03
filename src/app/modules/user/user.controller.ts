@@ -5,7 +5,7 @@ import sendResponse from "../../shared/sendResponse";
 import { UserService } from "./user.service";
 
 const createTraveler = catchAsync(async (req: Request, res: Response) => {
-      const result = await UserService.createTraveler(req);
+    const result = await UserService.createTraveler(req);
     console.log(result)
 
     sendResponse(res, {
@@ -16,6 +16,19 @@ const createTraveler = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
+    const result = await UserService.getAllFromDB();
+
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: "User retrieved successfully!✅",
+        data: result
+    })
+})
+
+
 export const UserController = {
-    createTraveler
+    createTraveler,
+    getAllFromDB
 }
