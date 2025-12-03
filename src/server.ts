@@ -1,6 +1,7 @@
 import { Server } from 'http';
 import app from './app';
 import config from './config';
+import { seedAdmin } from './app/helper/seedAdmin';
 
 
 async function bootstrap() {
@@ -8,6 +9,8 @@ async function bootstrap() {
     let server: Server;
 
     try {
+        // Run Admin Seeder
+        await seedAdmin();
         // Start the server
         server = app.listen(config.port, () => {
             console.log(`🚀 Server is running on http://localhost:${config.port}`);
