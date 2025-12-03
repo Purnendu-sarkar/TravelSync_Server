@@ -12,7 +12,7 @@ const createTraveler = catchAsync(async (req: Request, res: Response) => {
     sendResponse(res, {
         statusCode: 201,
         success: true,
-        message: "Traveler created successfully!✅",
+        message: "Traveler created successfully! 🎉",
         data: result
     })
 })
@@ -30,7 +30,7 @@ const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
     //     : "desc";
 
 
-   const result = await UserService.getAllFromDB(filters, options);
+    const result = await UserService.getAllFromDB(filters, options);
 
     sendResponse(res, {
         statusCode: 201,

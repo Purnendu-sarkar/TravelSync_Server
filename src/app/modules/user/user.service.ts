@@ -9,32 +9,34 @@ import { userSearchableFields } from "./user.constant";
 
 
 const createTraveler = async (req: Request) => {
+    // 1. Handle profile image upload
     if (req.file) {
         const uploadResult = await fileUploader.uploadToCloudinary(req.file);
         req.body.traveler.profilePhoto = uploadResult?.secure_url
-        console.log(uploadResult)
+        // console.log("Photo", uploadResult)
     }
 
-    // const { password, traveler } = req.body;
-    const hashPassword = await bcrypt.hash(req.body.password, config.bcrypt_salt_rounds);
+    const { password, traveler } = req.body;
+    const hashedPassword = await bcrypt.hash(password, config.bcrypt_salt_rounds);
 
-    const result = await prisma.$transaction(async (tnx: any) => {
+    // 2. Prisma Transaction
+    const result = await prisma.$transaction(async (tnx) => {
         // Create user
         await tnx.user.create({
             data: {
-                email: req.body.traveler.email,
-                password: hashPassword
-            }
+                email: traveler.email,
+                password: hashedPassword,
+                role: "TRAVELER",
+                status: "ACTIVE",
+            },
         });
-
         // Create traveler profile
         return await tnx.traveler.create({
-            data: req.body.traveler
-        })
-    })
+            data: traveler,
+        });
+    });
 
     return result;
-
 }
 
 
