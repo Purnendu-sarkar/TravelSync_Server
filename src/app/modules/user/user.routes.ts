@@ -20,6 +20,12 @@ router.get(
     UserController.getMyProfile
 );
 
+router.patch(
+    "/me",
+    auth(UserRole.TRAVELER),
+    UserController.updateMyProfile
+);
+
 router.post(
     "/create-traveler",
     fileUploader.upload.single("file"),

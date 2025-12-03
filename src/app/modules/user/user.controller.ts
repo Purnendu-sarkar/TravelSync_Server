@@ -44,9 +44,24 @@ const getMyProfile = catchAsync(async (req: Request & { user?: IJWTPayload }, re
     });
 });
 
+const updateMyProfile = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
+    const user = req.user;
+    const payload = req.body;
+
+    const result = await UserService.updateMyProfile(user as IJWTPayload, payload);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Profile updated successfully!",
+        data: result
+    });
+});
+
 
 export const UserController = {
     createTraveler,
     getAllFromDB,
-    getMyProfile
+    getMyProfile,
+    updateMyProfile
 }

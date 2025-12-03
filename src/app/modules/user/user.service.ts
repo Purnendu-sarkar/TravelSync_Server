@@ -129,8 +129,20 @@ const getMyProfile = async (user: IJWTPayload) => {
     };
 };
 
+const updateMyProfile = async (
+    user: IJWTPayload,
+    payload: UpdateTravelerProfileInput
+) => {
+    return prisma.traveler.update({
+        where: { email: user.email },
+        data: payload
+    });
+};
+
+
 export const UserService = {
     createTraveler,
     getAllFromDB,
-    getMyProfile
+    getMyProfile,
+    updateMyProfile
 }
