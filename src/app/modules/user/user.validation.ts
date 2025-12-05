@@ -8,7 +8,7 @@ const createTravelerValidationSchema = z.object({
         bio: z.string().optional(),
         gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional(),
         interests: z.array(z.string()).optional(),
-        location: z.string().optional(),
+        address: z.string().optional(),
         visitedCountries: z.array(z.string()).optional(),
     }),
 });

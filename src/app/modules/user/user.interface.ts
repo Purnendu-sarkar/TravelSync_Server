@@ -8,7 +8,7 @@ export type CreateTravelerInput = {
         bio?: string;
         gender?: Gender;
         interests?: string[];
-        location?: string;
+        address?: string;
         visitedCountries?: string[];
         profilePhoto?: string;
     };
@@ -19,7 +19,7 @@ export type UpdateTravelerProfileInput = {
     bio?: string;
     gender?: Gender;
     interests?: string[];
-    location?: string;
+    address?: string;
     visitedCountries?: string[];
     profilePhoto?: string;
 };

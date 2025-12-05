@@ -94,21 +94,21 @@ const changePassword = async (user: any, payload: { oldPassword: string; newPass
 };
 
 const forgotPassword = async (payload: { email: string }) => {
-  const user = await prisma.user.findUniqueOrThrow({ where: { email: payload.email } });
+    const user = await prisma.user.findUniqueOrThrow({ where: { email: payload.email } });
 
-  if (user.status !== UserStatus.ACTIVE) {
-    throw new ApiError(httpStatus.FORBIDDEN, "User is not active");
-  }
+    if (user.status !== UserStatus.ACTIVE) {
+        throw new ApiError(httpStatus.FORBIDDEN, "User is not active");
+    }
 
-  const resetToken = jwtHelper.generateToken(
-    { email: user.email, role: user.role},
-    config.reset_pass_secret,
-    config.reset_pass_expires
-  );
+    const resetToken = jwtHelper.generateToken(
+        { email: user.email, role: user.role },
+        config.reset_pass_secret,
+        config.reset_pass_expires
+    );
 
-  const resetLink = `${config.reset_pass_link}?token=${resetToken}&id=${user.id}`;
+    const resetLink = `${config.reset_pass_link}?token=${resetToken}&id=${user.id}`;
 
-  const html = `
+    const html = `
     <div>
       <p>Hi ${user.email},</p>
       <p>Click the button below to reset your password. The link expires in ${config.reset_pass_expires}.</p>
@@ -117,9 +117,9 @@ const forgotPassword = async (payload: { email: string }) => {
     </div>
   `;
 
-  await emailSender(user.email, "Reset your TravelBuddy password", html);
+    await emailSender(user.email, "Reset your TravelBuddy password", html);
 
-  return { message: "Reset link sent to your email" };
+    return { message: "Reset link sent to your email" };
 };
 
 
