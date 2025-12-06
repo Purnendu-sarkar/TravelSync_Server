@@ -51,28 +51,62 @@ const getAllFromDB = async (params: any, options: any) => {
 
     if (searchTerm) {
         andConditions.push({
-            OR: userSearchableFields.map(field => ({
-                [field]: {
-                    contains: searchTerm,
-                    mode: "insensitive"
-                }
-            }))
+            OR: [
+                // Search inside User table
+                ...userSearchableFields.map(field => ({
+                    [field]: {
+                        contains: searchTerm,
+                        mode: "insensitive",
+                    },
+                })),
+
+                // Search inside Traveler table
+                {
+                    travelers: {
+                        name: {
+                            contains: searchTerm,
+                            mode: "insensitive",
+                        },
+                    },
+                },
+            ],
         });
     }
 
     if (Object.keys(filterData).length > 0) {
-        andConditions.push({
-            AND: Object.keys(filterData).map(key => ({
-                [key]: {
-                    equals: filterData[key]
-                }
-            }))
+        Object.keys(filterData).forEach((key) => {
+
+            // Traveler-specific filters
+            if (["name", "gender", "address"].includes(key)) {
+                andConditions.push({
+                    travelers: {
+                        [key]: {
+                            contains: filterData[key],
+                            mode: "insensitive",
+                        },
+                    },
+                });
+            }
+
+            // User-specific filters
+            else {
+                andConditions.push({
+                    [key]: {
+                        equals: filterData[key],
+                    },
+                });
+            }
         });
     }
+
+    andConditions.push({
+        role: "TRAVELER"
+    });
 
     const whereConditions: Prisma.UserWhereInput =
         andConditions.length > 0 ? { AND: andConditions } : {};
 
+    // ✅ 1. First get users with traveler relation
     const result = await prisma.user.findMany({
         skip,
         take: limit,
@@ -80,16 +114,38 @@ const getAllFromDB = async (params: any, options: any) => {
         orderBy: {
             [sortBy]: sortOrder,
         },
-        // include: {
-        //     traveler: true,
-        // }
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            needPasswordChange: true,
+            status: true,
+            isDeleted: true,
+            createdAt: true,
+            updatedAt: true,
+
+            travelers: true,
+        }
+    });
+
+
+
+    // ✅ 2. FLATTEN the response
+    const formattedData = result.map(user => {
+        const { travelers, ...userData } = user;
+
+        return {
+            ...userData,
+            ...travelers,
+        };
     });
 
     const total = await prisma.user.count({ where: whereConditions });
+    const totalPages = Math.ceil(total / limit);
 
     return {
-        meta: { page, limit, total },
-        data: result
+        meta: { page, limit, total, totalPages },
+        data: formattedData
     };
 };
 
