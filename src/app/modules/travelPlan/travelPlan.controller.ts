@@ -59,11 +59,25 @@ const getSingleFromDB = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const updateTravelPlan = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
+    const user = req.user as IJWTPayload;
+    const { id } = req.params;
+    const result = await TravelPlanService.updateTravelPlan(user, id, req.body);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Travel plan updated successfully!",
+        data: result,
+    });
+});
+
 
 export const TravelPlanController = {
     createTravelPlan,
     getAllFromDB,
     getMyTravelPlans,
-    getSingleFromDB
+    getSingleFromDB,
+    updateTravelPlan
 
 };

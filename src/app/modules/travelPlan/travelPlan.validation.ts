@@ -10,8 +10,9 @@ const createTravelPlanValidationSchema = z.object({
     description: z.string().optional(),
 });
 
-
+const updateTravelPlanValidationSchema = createTravelPlanValidationSchema.partial()
 
 export const TravelPlanValidation = {
     createTravelPlanValidationSchema,
+    updateTravelPlanValidationSchema
 };

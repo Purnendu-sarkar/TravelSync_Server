@@ -1,7 +1,7 @@
 import { prisma } from "../../../lib/prisma";
 import { Prisma, TravelPlan, UserRole } from "../../../generated/prisma/client";
 import { IJWTPayload } from "../../types/common";
-import { CreateTravelPlanInput } from "./travelPlan.interface";
+import { CreateTravelPlanInput, UpdateTravelPlanInput } from "./travelPlan.interface";
 
 import httpStatus from "http-status";
 import ApiError from "../../errors/ApiError";
@@ -125,6 +125,24 @@ const getSingleFromDB = async (id: string): Promise<TravelPlan | null> => {
     });
 };
 
+const updateTravelPlan = async (user: IJWTPayload, id: string, payload: UpdateTravelPlanInput): Promise<TravelPlan> => {
+    const plan = await prisma.travelPlan.findUniqueOrThrow({
+        where: { id, isDeleted: false },
+    });
+
+    const traveler = await prisma.traveler.findUniqueOrThrow({ where: { email: user.email } });
+
+    if (plan.travelerId !== traveler.id) {
+        throw new ApiError(httpStatus.FORBIDDEN, "You can only update your own plans");
+    }
+
+    return prisma.travelPlan.update({
+        where: { id },
+        data: payload,
+    });
+};
+
+
 
 
 export const TravelPlanService = {
@@ -132,4 +150,5 @@ export const TravelPlanService = {
     getAllFromDB,
     getMyTravelPlans,
     getSingleFromDB,
+    updateTravelPlan,
 };

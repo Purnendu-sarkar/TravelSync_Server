@@ -26,4 +26,14 @@ router.post(
     TravelPlanController.createTravelPlan
 );
 
+router.patch(
+    "/:id",
+    auth(UserRole.TRAVELER),
+    (req, res, next) => {
+        req.body = TravelPlanValidation.updateTravelPlanValidationSchema.parse(req.body);
+        next();
+    },
+    TravelPlanController.updateTravelPlan
+);
+
 export const travelPlanRoutes = router;
