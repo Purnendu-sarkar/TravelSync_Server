@@ -27,9 +27,9 @@ router.patch(
 );
 
 router.patch(
-    "/:id/status",
+    "/:email/status",
     auth(UserRole.ADMIN),
-    UserController.changeUserStatus
+    UserController.updateUserStatus
 );
 
 router.post(
@@ -40,7 +40,6 @@ router.post(
         req.body = UserValidation.createTravelerValidationSchema.parse(JSON.parse(req.body.data))
         return UserController.createTraveler(req, res, next)
     }
-
 )
 
 export const userRoutes = router;

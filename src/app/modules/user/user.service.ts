@@ -100,7 +100,8 @@ const getAllFromDB = async (params: any, options: any) => {
     }
 
     andConditions.push({
-        role: "TRAVELER"
+        role: "TRAVELER",
+        isDeleted: false,
     });
 
     const whereConditions: Prisma.UserWhereInput =
@@ -195,22 +196,21 @@ const updateMyProfile = async (
     });
 };
 
-const changeUserStatus = async (id: string, payload: { status: UserStatus }) => {
+const updateUserStatus = async (email: string, status: UserStatus) => {
     return prisma.user.update({
-        where: { id },
-        data: payload,
-
+        where: { email },
+        data: { status },
         select: {
             id: true,
             email: true,
-            role: true,
             status: true,
+            role: true,
             updatedAt: true,
             travelers: true,
-        },
-
+        }
     });
 };
+
 
 
 export const UserService = {
@@ -218,5 +218,5 @@ export const UserService = {
     getAllFromDB,
     getMyProfile,
     updateMyProfile,
-    changeUserStatus
+    updateUserStatus,
 }
