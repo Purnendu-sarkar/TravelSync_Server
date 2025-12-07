@@ -14,6 +14,8 @@ router.get(
     TravelPlanController.getMyTravelPlans
 );
 
+router.get("/:id", TravelPlanController.getSingleFromDB);
+
 router.post(
     "/",
     auth(UserRole.TRAVELER),

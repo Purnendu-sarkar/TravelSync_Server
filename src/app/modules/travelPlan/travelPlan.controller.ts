@@ -47,10 +47,23 @@ const getMyTravelPlans = catchAsync(async (req: Request & { user?: IJWTPayload }
     });
 });
 
+const getSingleFromDB = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await TravelPlanService.getSingleFromDB(id);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Travel plan retrieved successfully!",
+        data: result,
+    });
+});
+
 
 export const TravelPlanController = {
     createTravelPlan,
     getAllFromDB,
     getMyTravelPlans,
+    getSingleFromDB
 
 };

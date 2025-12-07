@@ -119,10 +119,17 @@ const getMyTravelPlans = async (user: IJWTPayload, params: any, options: any) =>
     };
 };
 
+const getSingleFromDB = async (id: string): Promise<TravelPlan | null> => {
+    return prisma.travelPlan.findUnique({
+        where: { id, isDeleted: false },
+    });
+};
+
 
 
 export const TravelPlanService = {
     createTravelPlan,
     getAllFromDB,
     getMyTravelPlans,
+    getSingleFromDB,
 };
