@@ -109,6 +109,28 @@ const hardDeleteTravelPlan = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getMatchedTravelPlans = catchAsync(async (req: Request, res: Response) => {
+    const filters = pick(req.query, [
+        "destination",
+        "travelType",
+        "minBudget",
+        "maxBudget",
+        "startDate",
+        "endDate",
+        "interests"
+    ]);
+
+    const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+    const result = await TravelPlanService.getMatchedTravelPlans(filters, options);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Matched travel plans retrieved successfully! ✨",
+        data: result,
+    });
+});
 
 export const TravelPlanController = {
     createTravelPlan,
@@ -118,5 +140,6 @@ export const TravelPlanController = {
     updateTravelPlan,
     softDeleteTravelPlan,
     getSingleForAdmin,
-    hardDeleteTravelPlan
+    hardDeleteTravelPlan,
+    getMatchedTravelPlans
 };

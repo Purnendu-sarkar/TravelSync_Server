@@ -207,6 +207,151 @@ const hardDeleteTravelPlan = async (id: string): Promise<TravelPlan> => {
     });
 };
 
+
+const getMatchedTravelPlans = async (filters: any, options: any) => {
+    const { page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = options;
+    const skip = (page - 1) * limit;
+
+    const andConditions: Prisma.TravelPlanWhereInput[] = [
+        { isDeleted: false }
+    ];
+    //1. destination match
+    if (filters.destination) {
+        andConditions.push({
+            destination: {
+                contains: filters.destination,
+                mode: "insensitive"
+            }
+        });
+    }
+
+    // 2. Travel Type match
+    if (filters.travelType) {
+        andConditions.push({
+            travelType: filters.travelType
+        });
+    }
+
+    // 3. Budget Range
+    if (filters.minBudget || filters.maxBudget) {
+        andConditions.push({
+            budget: {
+                gte: filters.minBudget ? Number(filters.minBudget) : undefined,
+                lte: filters.maxBudget ? Number(filters.maxBudget) : undefined,
+            }
+        });
+    }
+
+    // 4. Date Range overlap check (very important!)
+    if (filters.startDate || filters.endDate) {
+        const searchStart = filters.startDate ? new Date(filters.startDate) : null;
+        const searchEnd = filters.endDate ? new Date(filters.endDate) : null;
+
+        const dateConditions: Prisma.TravelPlanWhereInput[] = [];
+
+        if (searchStart && searchEnd) {
+            // If both dates are present → check overlap
+            dateConditions.push({
+                OR: [
+                    {
+                        AND: [
+                            { startDate: { lte: searchEnd } },
+                            { endDate: { gte: searchStart } }
+                        ]
+                    }
+                ]
+            });
+        } else if (searchStart) {
+            dateConditions.push({ endDate: { gte: searchStart } });
+        } else if (searchEnd) {
+            dateConditions.push({ startDate: { lte: searchEnd } });
+        }
+
+        if (dateConditions.length > 0) {
+            andConditions.push({ AND: dateConditions });
+        }
+    }
+
+    // 5. Interests match (the smartest part!)
+    if (filters.interests && Array.isArray(filters.interests) && filters.interests.length > 0) {
+        andConditions.push({
+            traveler: {
+                interests: {
+                    hasSome: filters.interests // Prisma's hasSome → matches if any one element in the array matches
+                }
+            }
+        });
+    }
+
+    const whereConditions: Prisma.TravelPlanWhereInput =
+        andConditions.length > 0 ? { AND: andConditions } : {};
+
+    const result = await prisma.travelPlan.findMany({
+        where: whereConditions,
+        skip,
+        take: Number(limit),
+        orderBy: {
+            [sortBy]: sortOrder
+        },
+        include: {
+            traveler: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    bio: true,
+                    gender: true,
+                    profilePhoto: true,
+                    interests: true,
+                    visitedCountries: true,
+                    isVerified: true,
+                    _count: {
+                        select: { travelPlans: true }
+                    }
+                }
+            }
+        }
+    });
+
+    // Adding match score (so that frontend can show "90% Match")
+    const formatted = result.map(plan => {
+        let matchScore = 0;
+        const totalCriteria = 5; // destination, type, budget, date, interests
+
+        if (filters.destination && plan.destination.toLowerCase().includes(filters.destination.toLowerCase())) matchScore += 20;
+        if (filters.travelType && plan.travelType === filters.travelType) matchScore += 20;
+        if (filters.minBudget && filters.maxBudget && plan.budget >= filters.minBudget && plan.budget <= filters.maxBudget) matchScore += 20;
+        // Date overlap (simplified)
+        if (filters.startDate && filters.endDate) {
+            const s1 = new Date(plan.startDate);
+            const e1 = new Date(plan.endDate);
+            const s2 = new Date(filters.startDate);
+            const e2 = new Date(filters.endDate);
+            if (s1 <= e2 && e1 >= s2) matchScore += 20;
+        }
+        if (filters.interests && plan.traveler.interests.some((i: string) => filters.interests.includes(i))) {
+            matchScore += 20;
+        }
+
+        return {
+            ...plan,
+            matchScore: Math.min(matchScore, 100) + "% Match 🔥"
+        };
+    });
+
+    const total = await prisma.travelPlan.count({ where: whereConditions });
+
+    return {
+        meta: {
+            page: Number(page),
+            limit: Number(limit),
+            total,
+            totalPages: Math.ceil(total / limit)
+        },
+        data: formatted
+    };
+};
+
 export const TravelPlanService = {
     createTravelPlan,
     getAllFromDB,
@@ -215,5 +360,6 @@ export const TravelPlanService = {
     updateTravelPlan,
     softDeleteTravelPlan,
     getSingleForAdmin,
-    hardDeleteTravelPlan
+    hardDeleteTravelPlan,
+    getMatchedTravelPlans
 };
