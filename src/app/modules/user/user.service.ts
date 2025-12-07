@@ -186,6 +186,26 @@ const getMyProfile = async (user: IJWTPayload) => {
     };
 };
 
+const getSingleTraveler = async (email: string) => {
+    const user = await prisma.user.findUniqueOrThrow({
+        where: { email, role: UserRole.TRAVELER },
+        select: {
+            id: true,
+            email: true,
+            status: true,
+            role: true,
+            isDeleted: true,
+            createdAt: true,
+            updatedAt: true,
+            travelers: true,
+        }
+    });
+    return {
+        ...user,
+        ...user.travelers,
+    };
+};
+
 const updateMyProfile = async (
     user: IJWTPayload,
     payload: UpdateTravelerProfileInput
@@ -217,6 +237,7 @@ export const UserService = {
     createTraveler,
     getAllFromDB,
     getMyProfile,
+    getSingleTraveler,
     updateMyProfile,
     updateUserStatus,
 }

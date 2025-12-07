@@ -20,6 +20,12 @@ router.get(
     UserController.getMyProfile
 );
 
+router.get(
+    "/:email",
+    auth(UserRole.ADMIN),
+    UserController.getSingleTraveler
+);
+
 router.patch(
     "/me",
     auth(UserRole.TRAVELER),

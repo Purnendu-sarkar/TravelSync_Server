@@ -44,6 +44,18 @@ const getMyProfile = catchAsync(async (req: Request & { user?: IJWTPayload }, re
     });
 });
 
+const getSingleTraveler = catchAsync(async (req, res) => {
+    const { email } = req.params;
+    const result = await UserService.getSingleTraveler(email);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Traveler retrieved successfully",
+        data: result
+    });
+});
+
 const updateMyProfile = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
     const user = req.user;
     const payload = req.body;
@@ -76,6 +88,7 @@ export const UserController = {
     createTraveler,
     getAllFromDB,
     getMyProfile,
+    getSingleTraveler,
     updateMyProfile,
     updateUserStatus,
 }
