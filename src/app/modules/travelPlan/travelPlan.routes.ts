@@ -6,6 +6,8 @@ import { TravelPlanValidation } from "./travelPlan.validation";
 
 const router = express.Router();
 
+router.get("/", TravelPlanController.getAllFromDB);
+
 router.post(
     "/",
     auth(UserRole.TRAVELER),
