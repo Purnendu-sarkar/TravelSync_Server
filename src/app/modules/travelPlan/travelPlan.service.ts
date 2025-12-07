@@ -70,8 +70,59 @@ const getAllFromDB = async (params: any, options: any) => {
     };
 };
 
+const getMyTravelPlans = async (user: IJWTPayload, params: any, options: any) => {
+    const traveler = await prisma.traveler.findUniqueOrThrow({ where: { email: user.email } });
+
+    const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(options);
+    const { searchTerm, ...filterData } = params;
+
+    const andConditions: Prisma.TravelPlanWhereInput[] = [{ travelerId: traveler.id }];
+
+    if (searchTerm) {
+        andConditions.push({
+            OR: travelPlanSearchableFields.map(field => ({
+                [field]: {
+                    contains: searchTerm,
+                    mode: "insensitive",
+                },
+            })),
+        });
+    }
+
+    if (Object.keys(filterData).length > 0) {
+        andConditions.push({
+            AND: Object.keys(filterData).map(key => ({
+                [key]: {
+                    equals: filterData[key],
+                },
+            })),
+        });
+    }
+
+    andConditions.push({ isDeleted: false });
+
+    const whereConditions: Prisma.TravelPlanWhereInput = andConditions.length > 0 ? { AND: andConditions } : {};
+
+    const result = await prisma.travelPlan.findMany({
+        skip,
+        take: limit,
+        where: whereConditions,
+        orderBy: { [sortBy]: sortOrder },
+    });
+
+    const total = await prisma.travelPlan.count({ where: whereConditions });
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+        meta: { page, limit, total, totalPages },
+        data: result,
+    };
+};
+
+
 
 export const TravelPlanService = {
     createTravelPlan,
     getAllFromDB,
+    getMyTravelPlans,
 };

@@ -8,6 +8,12 @@ const router = express.Router();
 
 router.get("/", TravelPlanController.getAllFromDB);
 
+router.get(
+    "/my-plans",
+    auth(UserRole.TRAVELER),
+    TravelPlanController.getMyTravelPlans
+);
+
 router.post(
     "/",
     auth(UserRole.TRAVELER),

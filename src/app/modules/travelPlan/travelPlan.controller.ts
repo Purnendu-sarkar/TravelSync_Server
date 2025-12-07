@@ -32,8 +32,25 @@ const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getMyTravelPlans = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
+    const user = req.user as IJWTPayload;
+    const filters = pick(req.query, travelPlanFilterableFields);
+    const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+    const result = await TravelPlanService.getMyTravelPlans(user, filters, options);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "My travel plans retrieved successfully!✅",
+        data: result,
+    });
+});
+
 
 export const TravelPlanController = {
     createTravelPlan,
     getAllFromDB,
+    getMyTravelPlans,
+
 };
