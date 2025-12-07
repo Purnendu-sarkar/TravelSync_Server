@@ -48,4 +48,10 @@ router.post(
     }
 )
 
+router.delete(
+    "/:email",
+    auth(UserRole.ADMIN),
+    UserController.deleteTravelerByEmail
+);
+
 export const userRoutes = router;

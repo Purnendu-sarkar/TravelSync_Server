@@ -231,7 +231,32 @@ const updateUserStatus = async (email: string, status: UserStatus) => {
     });
 };
 
+const deleteTravelerByEmail = async (email: string) => {
+    const user = await prisma.user.update({
+        where: { email },
+        data: {
+            isDeleted: true,
+            status: "INACTIVE",
+        },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            isDeleted: true,
+            status: true,
+            updatedAt: true,
+        },
+    });
 
+    await prisma.traveler.update({
+        where: { email },
+        data: {
+            isDeleted: true,
+        },
+    });
+
+    return user;
+};
 
 export const UserService = {
     createTraveler,
@@ -240,4 +265,5 @@ export const UserService = {
     getSingleTraveler,
     updateMyProfile,
     updateUserStatus,
+    deleteTravelerByEmail
 }

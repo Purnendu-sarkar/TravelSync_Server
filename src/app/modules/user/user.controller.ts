@@ -84,6 +84,19 @@ const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+const deleteTravelerByEmail = catchAsync(async (req: Request, res: Response) => {
+    const { email } = req.params;
+
+    const result = await UserService.deleteTravelerByEmail(email);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Traveler deleted successfully!",
+        data: result,
+    });
+});
+
 export const UserController = {
     createTraveler,
     getAllFromDB,
@@ -91,4 +104,5 @@ export const UserController = {
     getSingleTraveler,
     updateMyProfile,
     updateUserStatus,
+    deleteTravelerByEmail,
 }
