@@ -16,6 +16,12 @@ router.get(
 
 router.get("/:id", TravelPlanController.getSingleFromDB);
 
+router.get(
+    "/admin/:id",
+    auth(UserRole.ADMIN),
+    TravelPlanController.getSingleForAdmin
+);
+
 router.post(
     "/",
     auth(UserRole.TRAVELER),

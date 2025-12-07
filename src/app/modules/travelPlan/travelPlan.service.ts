@@ -59,14 +59,28 @@ const getAllFromDB = async (params: any, options: any) => {
         take: limit,
         where: whereConditions,
         orderBy: { [sortBy]: sortOrder },
+        include: {
+            traveler: {
+                select: {
+                    name: true,
+                    email: true,
+                    _count: { select: { travelPlans: true } }
+                }
+            }
+        }
     });
+
+    const formatted = result.map(plan => ({
+        ...plan,
+        travelerPlanCount: plan.traveler?._count?.travelPlans || 0
+    }));
 
     const total = await prisma.travelPlan.count({ where: whereConditions });
     const totalPages = Math.ceil(total / limit);
 
     return {
         meta: { page, limit, total, totalPages },
-        data: result,
+        data: formatted,
     };
 };
 
@@ -159,6 +173,30 @@ const softDeleteTravelPlan = async (user: IJWTPayload, id: string): Promise<Trav
     });
 };
 
+const getSingleForAdmin = async (id: string): Promise<any> => {
+    const plan = await prisma.travelPlan.findUnique({
+        where: { id, isDeleted: false },
+        include: {
+            traveler: {
+                select: { name: true, email: true }
+            }
+        }
+    });
+
+    if (!plan) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Travel plan not found");
+    }
+
+    const planCount = await prisma.travelPlan.count({
+        where: { travelerId: plan.travelerId, isDeleted: false }
+    });
+
+    return {
+        ...plan,
+        travelerPlanCount: planCount
+    };
+};
+
 
 export const TravelPlanService = {
     createTravelPlan,
@@ -166,5 +204,6 @@ export const TravelPlanService = {
     getMyTravelPlans,
     getSingleFromDB,
     updateTravelPlan,
-    softDeleteTravelPlan
+    softDeleteTravelPlan,
+    getSingleForAdmin,
 };

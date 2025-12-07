@@ -85,6 +85,17 @@ const softDeleteTravelPlan = catchAsync(async (req: Request & { user?: IJWTPaylo
     });
 });
 
+const getSingleForAdmin = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await TravelPlanService.getSingleForAdmin(id);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Travel plan for admin retrieved successfully!",
+        data: result,
+    });
+});
 
 export const TravelPlanController = {
     createTravelPlan,
@@ -92,5 +103,6 @@ export const TravelPlanController = {
     getMyTravelPlans,
     getSingleFromDB,
     updateTravelPlan,
-    softDeleteTravelPlan
+    softDeleteTravelPlan,
+    getSingleForAdmin,
 };
