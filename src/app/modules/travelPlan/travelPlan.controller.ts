@@ -97,6 +97,19 @@ const getSingleForAdmin = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const hardDeleteTravelPlan = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await TravelPlanService.hardDeleteTravelPlan(id);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Travel plan hard deleted successfully!",
+        data: result,
+    });
+});
+
+
 export const TravelPlanController = {
     createTravelPlan,
     getAllFromDB,
@@ -105,4 +118,5 @@ export const TravelPlanController = {
     updateTravelPlan,
     softDeleteTravelPlan,
     getSingleForAdmin,
+    hardDeleteTravelPlan
 };

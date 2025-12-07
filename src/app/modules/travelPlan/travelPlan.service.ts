@@ -197,6 +197,15 @@ const getSingleForAdmin = async (id: string): Promise<any> => {
     };
 };
 
+const hardDeleteTravelPlan = async (id: string): Promise<TravelPlan> => {
+    const plan = await prisma.travelPlan.findUniqueOrThrow({
+        where: { id }
+    });
+
+    return prisma.travelPlan.delete({
+        where: { id }
+    });
+};
 
 export const TravelPlanService = {
     createTravelPlan,
@@ -206,4 +215,5 @@ export const TravelPlanService = {
     updateTravelPlan,
     softDeleteTravelPlan,
     getSingleForAdmin,
+    hardDeleteTravelPlan
 };

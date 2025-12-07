@@ -48,4 +48,10 @@ router.delete(
     TravelPlanController.softDeleteTravelPlan
 );
 
+router.delete(
+    "/admin/:id",
+    auth(UserRole.ADMIN),
+    TravelPlanController.hardDeleteTravelPlan
+);
+
 export const travelPlanRoutes = router;
