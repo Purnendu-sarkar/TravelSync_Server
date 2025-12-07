@@ -167,6 +167,11 @@ const getMyProfile = async (user: IJWTPayload) => {
             where: {
                 email: userInfo.email
             },
+            include: {
+                _count: {
+                    select: { travelPlans: true },
+                },
+            },
             omit: {
                 createdAt: true,
                 updatedAt: true
@@ -197,12 +202,19 @@ const getSingleTraveler = async (email: string) => {
             isDeleted: true,
             createdAt: true,
             updatedAt: true,
-            travelers: true,
+            travelers: {
+                include: {
+                    _count: {
+                        select: { travelPlans: true },
+                    },
+                },
+            },
         }
     });
     return {
         ...user,
         ...user.travelers,
+        travelPlansCount: user.travelers?._count.travelPlans,
     };
 };
 

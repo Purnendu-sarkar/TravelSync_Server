@@ -1,0 +1,22 @@
+// =======================
+//  TRAVEL PLAN Model
+// =======================
+model TravelPlan {
+    id          String     @id @default(uuid())
+    travelerId  String
+    destination String
+    startDate   DateTime
+    endDate     DateTime
+    budget      Float
+    travelType  TravelType
+    itinerary   String? // Optional detailed plan
+    description String? // Optional description
+    isDeleted   Boolean    @default(false)
+    createdAt   DateTime   @default(now())
+    updatedAt   DateTime   @updatedAt
+
+    // Relation
+    traveler Traveler @relation(fields: [travelerId], references: [id])
+
+    @@map("travel_plans")
+}
