@@ -142,7 +142,22 @@ const updateTravelPlan = async (user: IJWTPayload, id: string, payload: UpdateTr
     });
 };
 
+const softDeleteTravelPlan = async (user: IJWTPayload, id: string): Promise<TravelPlan> => {
+    const plan = await prisma.travelPlan.findUniqueOrThrow({
+        where: { id, isDeleted: false },
+    });
 
+    const traveler = await prisma.traveler.findUniqueOrThrow({ where: { email: user.email } });
+
+    if (plan.travelerId !== traveler.id) {
+        throw new ApiError(httpStatus.FORBIDDEN, "You can only delete your own plans");
+    }
+
+    return prisma.travelPlan.update({
+        where: { id },
+        data: { isDeleted: true },
+    });
+};
 
 
 export const TravelPlanService = {
@@ -151,4 +166,5 @@ export const TravelPlanService = {
     getMyTravelPlans,
     getSingleFromDB,
     updateTravelPlan,
+    softDeleteTravelPlan
 };

@@ -36,4 +36,10 @@ router.patch(
     TravelPlanController.updateTravelPlan
 );
 
+router.delete(
+    "/:id",
+    auth(UserRole.TRAVELER),
+    TravelPlanController.softDeleteTravelPlan
+);
+
 export const travelPlanRoutes = router;

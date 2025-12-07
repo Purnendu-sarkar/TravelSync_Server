@@ -72,12 +72,25 @@ const updateTravelPlan = catchAsync(async (req: Request & { user?: IJWTPayload }
     });
 });
 
+const softDeleteTravelPlan = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
+    const user = req.user as IJWTPayload;
+    const { id } = req.params;
+    const result = await TravelPlanService.softDeleteTravelPlan(user, id);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Travel plan deleted successfully!",
+        data: result,
+    });
+});
+
 
 export const TravelPlanController = {
     createTravelPlan,
     getAllFromDB,
     getMyTravelPlans,
     getSingleFromDB,
-    updateTravelPlan
-
+    updateTravelPlan,
+    softDeleteTravelPlan
 };
