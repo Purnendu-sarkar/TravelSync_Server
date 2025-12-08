@@ -88,4 +88,15 @@ router.patch(
     TravelPlanController.updateRequestStatus
 );
 
+router.patch(
+    "/:id/start",
+    auth(UserRole.TRAVELER),
+    TravelPlanController.startTravelPlan
+);
+router.patch(
+    "/:id/complete",
+    auth(UserRole.TRAVELER),
+    TravelPlanController.completeTravelPlan
+);
+
 export const travelPlanRoutes = router;

@@ -11,12 +11,13 @@ model TravelPlan {
     travelType  TravelType
     itinerary   String? // Optional detailed plan
     description String? // Optional description
+    status      PlanStatus @default(PENDING)
     isDeleted   Boolean    @default(false)
     createdAt   DateTime   @default(now())
     updatedAt   DateTime   @updatedAt
 
     // Relation
-    traveler Traveler @relation(fields: [travelerId], references: [id])
+    traveler      Traveler             @relation(fields: [travelerId], references: [id])
     buddyRequests TravelBuddyRequest[]
 
     @@map("travel_plans")

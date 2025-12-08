@@ -1,5 +1,5 @@
 import { prisma } from "../../../lib/prisma";
-import { Prisma, RequestStatus, TravelPlan, UserRole } from "../../../generated/prisma/client";
+import { PlanStatus, Prisma, RequestStatus, TravelPlan, UserRole } from "../../../generated/prisma/client";
 import { IJWTPayload } from "../../types/common";
 import { CreateTravelPlanInput, SendRequestInput, UpdateRequestStatusInput, UpdateTravelPlanInput } from "./travelPlan.interface";
 
@@ -540,6 +540,81 @@ const getMySentRequests = async (user: IJWTPayload, filters: any, options: any) 
     };
 };
 
+const startTravelPlan = async (user: IJWTPayload, id: string): Promise<TravelPlan> => {
+    const plan = await prisma.travelPlan.findUniqueOrThrow({
+        where: { id, isDeleted: false },
+    });
+    const traveler = await prisma.traveler.findUniqueOrThrow({ where: { email: user.email } });
+    if (plan.travelerId !== traveler.id) {
+        throw new ApiError(httpStatus.FORBIDDEN, "You can only start your own plans");
+    }
+    if (plan.status !== PlanStatus.PENDING) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Plan is not pending");
+    }
+    const currentDate = new Date();
+    if (plan.startDate > currentDate) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Cannot start plan before start date");
+    }
+    return prisma.travelPlan.update({
+        where: { id },
+        data: { status: PlanStatus.ONGOING },
+    });
+};
+
+const completeTravelPlan = async (user: IJWTPayload, id: string): Promise<TravelPlan> => {
+    const plan = await prisma.travelPlan.findUniqueOrThrow({
+        where: { id, isDeleted: false },
+    });
+    const traveler = await prisma.traveler.findUniqueOrThrow({ where: { email: user.email } });
+    if (plan.travelerId !== traveler.id) {
+        throw new ApiError(httpStatus.FORBIDDEN, "You can only complete your own plans");
+    }
+    if (plan.status !== PlanStatus.ONGOING) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Plan is not ongoing");
+    }
+    const currentDate = new Date();
+    if (plan.endDate > currentDate) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Cannot complete plan before end date");
+    }
+    return prisma.travelPlan.update({
+        where: { id },
+        data: { status: PlanStatus.COMPLETED },
+    });
+};
+
+// Cron job logic (This can be called in app.ts or server.ts on startup)
+const setupCronJobs = () => {
+    const cron = require('node-cron');
+    // Run every minute (adjust as needed, e.g., '0 0 * * *' for daily at midnight)
+    cron.schedule('0 12,0 * * *', async () => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+
+        console.log("Cron Called")
+
+        // Auto-start pending plans where startDate <= currentDate
+        await prisma.travelPlan.updateMany({
+            where: {
+                status: PlanStatus.PENDING,
+                startDate: { lte: today },
+                isDeleted: false,
+            },
+            data: { status: PlanStatus.ONGOING },
+        });
+
+        // Auto-complete ongoing plans where endDate < currentDate
+        await prisma.travelPlan.updateMany({
+            where: {
+                status: PlanStatus.ONGOING,
+                endDate: { lt: today },
+                isDeleted: false,
+            },
+            data: { status: PlanStatus.COMPLETED },
+        });
+    });
+};
+
 export const TravelPlanService = {
     createTravelPlan,
     getAllFromDB,
@@ -553,5 +628,8 @@ export const TravelPlanService = {
     sendInterestRequest,
     getRequestsForMyPlan,
     updateRequestStatus,
-    getMySentRequests
+    getMySentRequests,
+    startTravelPlan, // New
+    completeTravelPlan, // New
+    setupCronJobs,
 };

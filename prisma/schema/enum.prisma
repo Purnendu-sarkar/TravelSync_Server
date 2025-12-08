@@ -27,4 +27,8 @@ enum RequestStatus {
     ACCEPTED
     REJECTED
 }
-
+enum PlanStatus {
+    PENDING
+    ONGOING
+    COMPLETED
+}

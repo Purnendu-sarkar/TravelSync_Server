@@ -183,6 +183,30 @@ const getMySentRequests = catchAsync(async (req: Request & { user?: IJWTPayload 
     });
 });
 
+const startTravelPlan = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
+    const user = req.user as IJWTPayload;
+    const { id } = req.params;
+    const result = await TravelPlanService.startTravelPlan(user, id);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Travel plan started successfully!",
+        data: result,
+    });
+});
+
+const completeTravelPlan = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
+    const user = req.user as IJWTPayload;
+    const { id } = req.params;
+    const result = await TravelPlanService.completeTravelPlan(user, id);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Travel plan completed successfully!",
+        data: result,
+    });
+});
+
 export const TravelPlanController = {
     createTravelPlan,
     getAllFromDB,
@@ -196,5 +220,7 @@ export const TravelPlanController = {
     sendInterestRequest,
     getRequestsForMyPlan,
     updateRequestStatus,
-    getMySentRequests
+    getMySentRequests,
+    startTravelPlan,
+    completeTravelPlan
 };

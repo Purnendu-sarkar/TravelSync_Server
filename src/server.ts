@@ -2,6 +2,7 @@ import { Server } from 'http';
 import app from './app';
 import config from './config';
 import { seedAdmin } from './app/helper/seedAdmin';
+import { TravelPlanService } from './app/modules/travelPlan/travelPlan.service';
 
 
 async function bootstrap() {
@@ -11,6 +12,7 @@ async function bootstrap() {
     try {
         // Run Admin Seeder
         await seedAdmin();
+        TravelPlanService.setupCronJobs();
         // Start the server
         server = app.listen(config.port, () => {
             console.log(`🚀 Server is running on http://localhost:${config.port}`);
