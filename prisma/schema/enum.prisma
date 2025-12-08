@@ -1,34 +1,35 @@
 enum UserRole {
-    TRAVELER
-    ADMIN
+  TRAVELER
+  ADMIN
 }
 
 enum UserStatus {
-    ACTIVE
-    INACTIVE
-    BLOCKED
+  ACTIVE
+  INACTIVE
+  BLOCKED
 }
 
 enum Gender {
-    MALE
-    FEMALE
+  MALE
+  FEMALE
 }
 
 enum TravelType {
-    ADVENTURE
-    LEISURE
-    BUSINESS
-    FAMILY
-    SOLO
+  ADVENTURE
+  LEISURE
+  BUSINESS
+  FAMILY
+  SOLO
 }
 
 enum RequestStatus {
-    PENDING
-    ACCEPTED
-    REJECTED
+  PENDING
+  ACCEPTED
+  REJECTED
 }
+
 enum PlanStatus {
-    PENDING
-    ONGOING
-    COMPLETED
+  PENDING
+  ONGOING
+  COMPLETED
 }

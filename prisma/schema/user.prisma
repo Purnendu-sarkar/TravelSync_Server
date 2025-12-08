@@ -38,9 +38,11 @@ model Traveler {
   updatedAt        DateTime @updatedAt
 
   // Relation
-  user         User                 @relation(fields: [email], references: [email])
-  travelPlans  TravelPlan[]
-  sentRequests TravelBuddyRequest[] @relation("Requester")
+  user            User                 @relation(fields: [email], references: [email])
+  travelPlans     TravelPlan[]
+  sentRequests    TravelBuddyRequest[] @relation("Requester")
+  reviewsGiven    Review[]             @relation("ReviewsGiven")
+  reviewsReceived Review[]             @relation("ReviewsReceived")
 
   @@map("travelers")
 }

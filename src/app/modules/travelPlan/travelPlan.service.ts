@@ -527,6 +527,7 @@ const getMySentRequests = async (user: IJWTPayload, filters: any, options: any) 
                 },
             },
         },
+        
     });
     const total = await prisma.travelBuddyRequest.count({ where: whereConditions });
     return {
@@ -629,7 +630,7 @@ export const TravelPlanService = {
     getRequestsForMyPlan,
     updateRequestStatus,
     getMySentRequests,
-    startTravelPlan, // New
-    completeTravelPlan, // New
+    startTravelPlan,
+    completeTravelPlan, 
     setupCronJobs,
 };
