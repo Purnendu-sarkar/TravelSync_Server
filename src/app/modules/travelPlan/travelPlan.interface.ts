@@ -19,3 +19,11 @@ export type UpdateTravelPlanInput = {
     itinerary?: string;
     description?: string;
 };
+
+export type SendRequestInput = {
+    message?: string;
+};
+
+export type UpdateRequestStatusInput = {
+    status: 'ACCEPTED' | 'REJECTED';
+};

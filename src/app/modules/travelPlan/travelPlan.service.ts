@@ -1,7 +1,7 @@
 import { prisma } from "../../../lib/prisma";
-import { Prisma, TravelPlan, UserRole } from "../../../generated/prisma/client";
+import { Prisma, RequestStatus, TravelPlan, UserRole } from "../../../generated/prisma/client";
 import { IJWTPayload } from "../../types/common";
-import { CreateTravelPlanInput, UpdateTravelPlanInput } from "./travelPlan.interface";
+import { CreateTravelPlanInput, SendRequestInput, UpdateRequestStatusInput, UpdateTravelPlanInput } from "./travelPlan.interface";
 
 import httpStatus from "http-status";
 import ApiError from "../../errors/ApiError";
@@ -91,7 +91,6 @@ const getMyTravelPlans = async (user: IJWTPayload, params: any, options: any) =>
     const { searchTerm, ...filterData } = params;
 
     const andConditions: Prisma.TravelPlanWhereInput[] = [{ travelerId: traveler.id }];
-
     if (searchTerm) {
         andConditions.push({
             OR: travelPlanSearchableFields.map(field => ({
@@ -102,7 +101,6 @@ const getMyTravelPlans = async (user: IJWTPayload, params: any, options: any) =>
             })),
         });
     }
-
     if (Object.keys(filterData).length > 0) {
         andConditions.push({
             AND: Object.keys(filterData).map(key => ({
@@ -122,22 +120,46 @@ const getMyTravelPlans = async (user: IJWTPayload, params: any, options: any) =>
         take: limit,
         where: whereConditions,
         orderBy: { [sortBy]: sortOrder },
+        include: {
+            _count: {
+                select: { buddyRequests: true }
+            }
+        }
     });
-
+    const formatted = result.map(plan => ({
+        ...plan,
+        buddyRequestsCount: plan._count.buddyRequests
+    }));
     const total = await prisma.travelPlan.count({ where: whereConditions });
     const totalPages = Math.ceil(total / limit);
 
     return {
         meta: { page, limit, total, totalPages },
-        data: result,
+        data: formatted,
     };
 };
 
-const getSingleFromDB = async (id: string): Promise<TravelPlan | null> => {
+const getSingleFromDB = async (id: string): Promise<any> => {
     return prisma.travelPlan.findUnique({
         where: { id, isDeleted: false },
+        include: {
+            traveler: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    bio: true,
+                    gender: true,
+                    profilePhoto: true,
+                    interests: true,
+                    visitedCountries: true,
+                    isVerified: true,
+                },
+            },
+        },
     });
 };
+
 
 const updateTravelPlan = async (user: IJWTPayload, id: string, payload: UpdateTravelPlanInput): Promise<TravelPlan> => {
     const plan = await prisma.travelPlan.findUniqueOrThrow({
@@ -177,9 +199,11 @@ const getSingleForAdmin = async (id: string): Promise<any> => {
     const plan = await prisma.travelPlan.findUnique({
         where: { id, isDeleted: false },
         include: {
-            traveler: {
-                select: { name: true, email: true }
-            }
+            traveler: true
+            //     traveler: {
+            //         select: { name: true, email: true }
+            //     }
+            // }
         }
     });
 
@@ -352,6 +376,170 @@ const getMatchedTravelPlans = async (filters: any, options: any) => {
     };
 };
 
+const sendInterestRequest = async (user: IJWTPayload, planId: string, payload: SendRequestInput) => {
+    if (user.role !== UserRole.TRAVELER) {
+        throw new ApiError(httpStatus.FORBIDDEN, "Only travelers can send requests");
+    }
+    const traveler = await prisma.traveler.findUniqueOrThrow({ where: { email: user.email } });
+    const plan = await prisma.travelPlan.findUniqueOrThrow({
+        where: { id: planId, isDeleted: false },
+    });
+    if (plan.travelerId === traveler.id) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Cannot request your own plan");
+    }
+    const existingRequest = await prisma.travelBuddyRequest.findFirst({
+        where: {
+            travelPlanId: planId,
+            requesterId: traveler.id,
+        },
+    });
+    if (existingRequest) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Request already sent");
+    }
+    return prisma.travelBuddyRequest.create({
+        data: {
+            travelPlanId: planId,
+            requesterId: traveler.id,
+            message: payload.message,
+        },
+        include: {
+            requester: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    profilePhoto: true,
+                },
+            },
+        },
+    });
+};
+
+const getRequestsForMyPlan = async (user: IJWTPayload, planId: string, filters: any, options: any) => {
+    const traveler = await prisma.traveler.findUniqueOrThrow({ where: { email: user.email } });
+    const plan = await prisma.travelPlan.findUniqueOrThrow({
+        where: { id: planId, travelerId: traveler.id, isDeleted: false },
+    });
+    const { page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = options;
+    const skip = (page - 1) * limit;
+    const andConditions: Prisma.TravelBuddyRequestWhereInput[] = [
+        { travelPlanId: planId },
+    ];
+    if (filters.status) {
+        andConditions.push({ status: filters.status });
+    }
+    const whereConditions: Prisma.TravelBuddyRequestWhereInput =
+        andConditions.length > 0 ? { AND: andConditions } : {};
+    const result = await prisma.travelBuddyRequest.findMany({
+        where: whereConditions,
+        skip,
+        take: Number(limit),
+        orderBy: { [sortBy]: sortOrder },
+        include: {
+            requester: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    bio: true,
+                    gender: true,
+                    profilePhoto: true,
+                    interests: true,
+                    visitedCountries: true,
+                    isVerified: true,
+                },
+            },
+        },
+    });
+    const total = await prisma.travelBuddyRequest.count({ where: whereConditions });
+    return {
+        meta: {
+            page: Number(page),
+            limit: Number(limit),
+            total,
+            totalPages: Math.ceil(total / limit),
+        },
+        data: result,
+    };
+};
+
+const updateRequestStatus = async (user: IJWTPayload, requestId: string, payload: UpdateRequestStatusInput) => {
+    const request = await prisma.travelBuddyRequest.findUniqueOrThrow({
+        where: { id: requestId },
+        include: { travelPlan: true },
+    });
+    const traveler = await prisma.traveler.findUniqueOrThrow({ where: { email: user.email } });
+    if (request.travelPlan.travelerId !== traveler.id) {
+        throw new ApiError(httpStatus.FORBIDDEN, "You can only update requests for your own plans");
+    }
+    if (request.status !== RequestStatus.PENDING) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Only pending requests can be updated");
+    }
+    return prisma.travelBuddyRequest.update({
+        where: { id: requestId },
+        data: { status: payload.status },
+        include: {
+            requester: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    profilePhoto: true,
+                },
+            },
+        },
+    });
+};
+
+const getMySentRequests = async (user: IJWTPayload, filters: any, options: any) => {
+    const traveler = await prisma.traveler.findUniqueOrThrow({ where: { email: user.email } });
+    const { page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = options;
+    const skip = (page - 1) * limit;
+    const andConditions: Prisma.TravelBuddyRequestWhereInput[] = [
+        { requesterId: traveler.id },
+    ];
+    if (filters.status) {
+        andConditions.push({ status: filters.status });
+    }
+    const whereConditions: Prisma.TravelBuddyRequestWhereInput =
+        andConditions.length > 0 ? { AND: andConditions } : {};
+    const result = await prisma.travelBuddyRequest.findMany({
+        where: whereConditions,
+        skip,
+        take: Number(limit),
+        orderBy: { [sortBy]: sortOrder },
+        include: {
+            travelPlan: {
+                include: {
+                    traveler: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            bio: true,
+                            gender: true,
+                            profilePhoto: true,
+                            interests: true,
+                            visitedCountries: true,
+                            isVerified: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+    const total = await prisma.travelBuddyRequest.count({ where: whereConditions });
+    return {
+        meta: {
+            page: Number(page),
+            limit: Number(limit),
+            total,
+            totalPages: Math.ceil(total / limit),
+        },
+        data: result,
+    };
+};
+
 export const TravelPlanService = {
     createTravelPlan,
     getAllFromDB,
@@ -361,5 +549,9 @@ export const TravelPlanService = {
     softDeleteTravelPlan,
     getSingleForAdmin,
     hardDeleteTravelPlan,
-    getMatchedTravelPlans
+    getMatchedTravelPlans,
+    sendInterestRequest,
+    getRequestsForMyPlan,
+    updateRequestStatus,
+    getMySentRequests
 };

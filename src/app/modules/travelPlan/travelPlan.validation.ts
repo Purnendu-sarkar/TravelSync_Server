@@ -12,7 +12,17 @@ const createTravelPlanValidationSchema = z.object({
 
 const updateTravelPlanValidationSchema = createTravelPlanValidationSchema.partial()
 
+const sendRequestValidationSchema = z.object({
+    message: z.string().optional(),
+});
+
+const updateRequestStatusValidationSchema = z.object({
+    status: z.enum(["ACCEPTED", "REJECTED"]),
+});
+
 export const TravelPlanValidation = {
     createTravelPlanValidationSchema,
-    updateTravelPlanValidationSchema
+    updateTravelPlanValidationSchema,
+    sendRequestValidationSchema,
+    updateRequestStatusValidationSchema
 };

@@ -21,3 +21,10 @@ enum TravelType {
     FAMILY
     SOLO
 }
+
+enum RequestStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+}
+

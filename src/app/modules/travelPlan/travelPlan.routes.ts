@@ -15,6 +15,12 @@ router.get(
     TravelPlanController.getMyTravelPlans
 );
 
+router.get(
+    "/my-requests",
+    auth(UserRole.TRAVELER),
+    TravelPlanController.getMySentRequests
+)
+
 router.get("/:id", TravelPlanController.getSingleFromDB);
 
 router.get(
@@ -53,6 +59,33 @@ router.delete(
     "/admin/:id",
     auth(UserRole.ADMIN),
     TravelPlanController.hardDeleteTravelPlan
+);
+
+
+router.post(
+    "/:planId/request",
+    auth(UserRole.TRAVELER),
+    (req, res, next) => {
+        req.body = TravelPlanValidation.sendRequestValidationSchema.parse(req.body);
+        next();
+    },
+    TravelPlanController.sendInterestRequest
+);
+
+router.get(
+    "/my-plans/:planId/requests",
+    auth(UserRole.TRAVELER),
+    TravelPlanController.getRequestsForMyPlan
+);
+
+router.patch(
+    "/requests/:requestId",
+    auth(UserRole.TRAVELER),
+    (req, res, next) => {
+        req.body = TravelPlanValidation.updateRequestStatusValidationSchema.parse(req.body);
+        next();
+    },
+    TravelPlanController.updateRequestStatus
 );
 
 export const travelPlanRoutes = router;

@@ -17,6 +17,7 @@ model TravelPlan {
 
     // Relation
     traveler Traveler @relation(fields: [travelerId], references: [id])
+    buddyRequests TravelBuddyRequest[]
 
     @@map("travel_plans")
 }

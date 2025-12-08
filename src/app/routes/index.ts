@@ -16,7 +16,7 @@ const moduleRoutes = [
         route: authRoutes
     },
     {
-        path: '/travel-plan',
+        path: '/travel-plans',
         route: travelPlanRoutes
     }
 ];
