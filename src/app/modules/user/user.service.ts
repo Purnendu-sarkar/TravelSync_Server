@@ -8,6 +8,7 @@ import { Prisma, UserRole, UserStatus } from "../../../generated/prisma/client";
 import { userSearchableFields } from "./user.constant";
 import { IJWTPayload } from "../../types/common";
 import { UpdateTravelerProfileInput } from "./user.interface";
+import { ReviewService } from "../review/review.service";
 
 
 const createTraveler = async (req: Request) => {
@@ -160,7 +161,8 @@ const getMyProfile = async (user: IJWTPayload) => {
             updatedAt: true
         }
     });
-    let profileData;
+    let profileData: any = {};
+  let reviewSummary = { avgRating: 0, totalReviews: 0 };
 
     if (userInfo.role === UserRole.TRAVELER) {
         profileData = await prisma.traveler.findUnique({
@@ -177,6 +179,7 @@ const getMyProfile = async (user: IJWTPayload) => {
                 updatedAt: true
             }
         })
+        reviewSummary = await ReviewService.getTravelerReviewSummary(profileData!.id);
     } else if (userInfo.role === UserRole.ADMIN) {
         profileData = await prisma.admin.findUnique({
             where: {
@@ -187,7 +190,8 @@ const getMyProfile = async (user: IJWTPayload) => {
 
     return {
         ...userInfo,
-        ...profileData
+        ...profileData,
+        reviewSummary
     };
 };
 
@@ -211,10 +215,16 @@ const getSingleTraveler = async (email: string) => {
             },
         }
     });
+    const travelerId = user.travelers?.id;
+    const reviewSummary = travelerId
+        ? await ReviewService.getTravelerReviewSummary(travelerId)
+        : { avgRating: 0, totalReviews: 0 };
+
     return {
         ...user,
         ...user.travelers,
         travelPlansCount: user.travelers?._count.travelPlans,
+        reviewSummary
     };
 };
 

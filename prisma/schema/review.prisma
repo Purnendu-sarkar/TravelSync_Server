@@ -1,9 +1,9 @@
 model Review {
   id           String   @id @default(uuid())
-  reviewerId   String // যে রিভিউ দিচ্ছে
-  revieweeId   String // যাকে রিভিউ দেওয়া হচ্ছে
+  reviewerId   String
+  revieweeId   String 
   travelPlanId String
-  rating       Int // 1 থেকে 5
+  rating       Int 
   comment      String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -12,6 +12,6 @@ model Review {
   reviewee   Traveler   @relation("ReviewsReceived", fields: [revieweeId], references: [id])
   travelPlan TravelPlan @relation(fields: [travelPlanId], references: [id])
 
-  @@unique([reviewerId, revieweeId, travelPlanId]) // একই ট্রিপে একজনকে একবারই রিভিউ
+  @@unique([reviewerId, revieweeId, travelPlanId]) // Only one review per person per trip
   @@map("reviews")
 }

@@ -7,6 +7,7 @@ import httpStatus from "http-status";
 import ApiError from "../../errors/ApiError";
 import { paginationHelper } from "../../helper/paginationHelper";
 import { travelPlanSearchableFields } from "./travelPlan.constant";
+import { ReviewService } from "../review/review.service";
 
 const createTravelPlan = async (user: IJWTPayload, payload: CreateTravelPlanInput): Promise<TravelPlan> => {
     if (user.role !== UserRole.TRAVELER) {
@@ -70,10 +71,16 @@ const getAllFromDB = async (params: any, options: any) => {
         }
     });
 
-    const formatted = result.map(plan => ({
-        ...plan,
-        travelerPlanCount: plan.traveler?._count?.travelPlans || 0
-    }));
+    const formatted = await Promise.all(
+        result.map(async (plan) => {
+            const { avgRating, totalReviews } = await ReviewService.getTravelerReviewSummary(plan.travelerId);
+            return {
+                ...plan,
+                travelerPlanCount: plan.traveler?._count?.travelPlans || 0,
+                hostRating: { avgRating, totalReviews },
+            };
+        })
+    );
 
     const total = await prisma.travelPlan.count({ where: whereConditions });
     const totalPages = Math.ceil(total / limit);
@@ -126,10 +133,16 @@ const getMyTravelPlans = async (user: IJWTPayload, params: any, options: any) =>
             }
         }
     });
-    const formatted = result.map(plan => ({
-        ...plan,
-        buddyRequestsCount: plan._count.buddyRequests
-    }));
+    const formatted = await Promise.all(
+  result.map(async (plan) => {
+    const { avgRating, totalReviews } = await ReviewService.getTravelerReviewSummary(plan.travelerId);
+    return {
+      ...plan,
+      buddyRequestsCount: plan._count.buddyRequests,
+      hostRating: { avgRating, totalReviews },
+    };
+  })
+);
     const total = await prisma.travelPlan.count({ where: whereConditions });
     const totalPages = Math.ceil(total / limit);
 
@@ -140,7 +153,7 @@ const getMyTravelPlans = async (user: IJWTPayload, params: any, options: any) =>
 };
 
 const getSingleFromDB = async (id: string): Promise<any> => {
-    return prisma.travelPlan.findUnique({
+    const plan = await prisma.travelPlan.findUnique({
         where: { id, isDeleted: false },
         include: {
             traveler: {
@@ -158,8 +171,18 @@ const getSingleFromDB = async (id: string): Promise<any> => {
             },
         },
     });
-};
 
+    if (!plan) throw new ApiError(httpStatus.NOT_FOUND, "Plan not found");
+
+    const { avgRating, totalReviews } = await ReviewService.getTravelerReviewSummary(plan.travelerId);
+    const reviews = await ReviewService.getReviewsForTravelPlan(id);
+
+    return {
+        ...plan,
+        hostRating: { avgRating, totalReviews },
+        reviews,
+    };
+};
 
 const updateTravelPlan = async (user: IJWTPayload, id: string, payload: UpdateTravelPlanInput): Promise<TravelPlan> => {
     const plan = await prisma.travelPlan.findUniqueOrThrow({
@@ -338,9 +361,11 @@ const getMatchedTravelPlans = async (filters: any, options: any) => {
     });
 
     // Adding match score (so that frontend can show "90% Match")
-    const formatted = result.map(plan => {
+
+    const formatted = await Promise.all(result.map(async (plan) => {
         let matchScore = 0;
         const totalCriteria = 5; // destination, type, budget, date, interests
+        const { avgRating, totalReviews } = await ReviewService.getTravelerReviewSummary(plan.travelerId);
 
         if (filters.destination && plan.destination.toLowerCase().includes(filters.destination.toLowerCase())) matchScore += 20;
         if (filters.travelType && plan.travelType === filters.travelType) matchScore += 20;
@@ -359,9 +384,10 @@ const getMatchedTravelPlans = async (filters: any, options: any) => {
 
         return {
             ...plan,
+            hostRating: { avgRating, totalReviews },
             matchScore: Math.min(matchScore, 100) + "% Match 🔥"
         };
-    });
+    }));
 
     const total = await prisma.travelPlan.count({ where: whereConditions });
 
@@ -527,7 +553,7 @@ const getMySentRequests = async (user: IJWTPayload, filters: any, options: any) 
                 },
             },
         },
-        
+
     });
     const total = await prisma.travelBuddyRequest.count({ where: whereConditions });
     return {
@@ -631,6 +657,6 @@ export const TravelPlanService = {
     updateRequestStatus,
     getMySentRequests,
     startTravelPlan,
-    completeTravelPlan, 
+    completeTravelPlan,
     setupCronJobs,
 };

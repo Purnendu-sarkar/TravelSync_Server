@@ -99,7 +99,34 @@ const getMyReceivedReviews = async (user: IJWTPayload) => {
   };
 };
 
+const getTravelerReviewSummary = async (travelerId: string) => {
+  const reviews = await prisma.review.findMany({
+    where: { revieweeId: travelerId },
+  });
+
+  const totalReviews = reviews.length;
+  const avgRating =
+    totalReviews > 0
+      ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1))
+      : 0;
+
+  return { avgRating, totalReviews };
+};
+
+const getReviewsForTravelPlan = async (travelPlanId: string) => {
+  return await prisma.review.findMany({
+    where: { travelPlanId },
+    include: {
+      reviewer: { select: { name: true, profilePhoto: true } },
+      reviewee: { select: { name: true, profilePhoto: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
 export const ReviewService = {
   createReview,
   getMyReceivedReviews,
+    getTravelerReviewSummary,
+    getReviewsForTravelPlan,
 };
