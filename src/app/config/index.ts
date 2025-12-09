@@ -37,7 +37,7 @@ const config: AppConfig = {
     jwt_refresh_secret: process.env.JWT_REFRESH_SECRET || "defaultRefreshSecret",
     jwt_access_expires: process.env.JWT_ACCESS_EXPIRES || "1h",
     jwt_refresh_expires: process.env.JWT_REFRESH_EXPIRES || "90d",
-    reset_pass_secret: process.env.RESET_PASS_SECRET || "defaultResetSecret",
+    reset_pass_secret: process.env.RESET_PASS_SECRET || "verysecretresetkey",
     reset_pass_expires: process.env.RESET_PASS_EXPIRES || "15m",
     reset_pass_link: process.env.RESET_PASS_LINK || "http://localhost:3000/reset-password",
     cloudinary: {
