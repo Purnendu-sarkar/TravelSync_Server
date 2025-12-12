@@ -8,7 +8,10 @@ import cookieParser from 'cookie-parser';
 
 const app: Application = express();
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: [
+        'http://localhost:3000',
+        'https://travel-sync-five.vercel.app'
+    ],
     credentials: true
 }));
 
