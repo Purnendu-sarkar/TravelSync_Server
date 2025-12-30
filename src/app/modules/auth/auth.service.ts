@@ -44,7 +44,17 @@ const getMe = async (session: any) => {
     if (!token) throw new ApiError(httpStatus.UNAUTHORIZED, "No access token");
 
     const decoded: any = jwtHelper.verifyToken(token, config.jwt_access_secret);
-    const user = await prisma.user.findUniqueOrThrow({ where: { email: decoded.email } });
+    const user = await prisma.user.findUniqueOrThrow({
+        where: { email: decoded.email },
+        include: {
+            travelers: {
+                select: { name: true },
+            },
+            admins: {
+                select: { name: true }
+            }
+        }
+    });
 
     return {
         id: user.id,
@@ -52,6 +62,7 @@ const getMe = async (session: any) => {
         role: user.role,
         needPasswordChange: user.needPasswordChange,
         status: user.status,
+        name: user.travelers?.name || user.admins?.name || "Unknown User",
     };
 };
 
