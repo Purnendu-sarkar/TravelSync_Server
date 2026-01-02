@@ -1,0 +1,14 @@
+model Payment {
+    id            String           @id @default(uuid())
+    travelerId    String
+    amount        Float
+    plan          SubscriptionPlan
+    status        String // e.g., 'succeeded', 'failed'
+    transactionId String?
+    createdAt     DateTime         @default(now())
+    updatedAt     DateTime         @updatedAt
+
+    traveler Traveler @relation(fields: [travelerId], references: [id])
+
+    @@map("payments")
+}

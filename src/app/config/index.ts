@@ -9,6 +9,11 @@ interface CloudinaryConfig {
     api_secret: string;
 }
 
+interface StripeConfig {
+    secret_key: any;
+    webhook_secret: any
+}
+
 interface AppConfig {
     node_env: string;
     port: string;
@@ -25,7 +30,9 @@ interface AppConfig {
     emailSender: {
         email: string;
         app_pass: string;
-    }
+    },
+    stripe: StripeConfig;
+    client_url: string;
 }
 
 const config: AppConfig = {
@@ -40,6 +47,7 @@ const config: AppConfig = {
     reset_pass_secret: process.env.RESET_PASS_SECRET || "verysecretresetkey",
     reset_pass_expires: process.env.RESET_PASS_EXPIRES || "15m",
     reset_pass_link: process.env.RESET_PASS_LINK || "http://localhost:3000/reset-password",
+    client_url: process.env.CLIENT_URL || "http://localhost:3000",
     cloudinary: {
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "",
         api_key: process.env.CLOUDINARY_API_KEY || "",
@@ -48,7 +56,11 @@ const config: AppConfig = {
     emailSender: {
         email: process.env.EMAIL_SENDER_EMAIL || "",
         app_pass: process.env.EMAIL_SENDER_APP_PASS || "",
-    }
+    },
+    stripe: {
+        secret_key: process.env.STRIPE_SECRET_KEY,
+        webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
+    },
 };
 
 export default config;

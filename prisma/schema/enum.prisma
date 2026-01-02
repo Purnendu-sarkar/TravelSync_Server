@@ -33,3 +33,9 @@ enum PlanStatus {
   ONGOING
   COMPLETED
 }
+
+enum SubscriptionPlan {
+  FREE
+  MONTHLY
+  YEARLY
+}
