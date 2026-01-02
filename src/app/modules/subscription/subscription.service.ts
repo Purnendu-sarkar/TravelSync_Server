@@ -1,9 +1,77 @@
+import { prisma } from "../../../lib/prisma";
+import { SubscriptionPlan, UserRole } from "../../../generated/prisma/enums";
+import { IJWTPayload } from "../../types/common";
+import ApiError from "../../errors/ApiError";
+import httpStatus from "http-status";
 import { subscriptionPlans } from "./subscription.constant";
+import Stripe from "stripe";
+import config from "../../config";
+
+const stripe = new Stripe(config.stripe.secret_key as string);
+
 
 const getPlans = async () => {
     return subscriptionPlans;
 };
 
+const createCheckoutSession = async (user: IJWTPayload, planType: SubscriptionPlan) => {
+    if (user.role !== UserRole.TRAVELER) {
+        throw new ApiError(httpStatus.FORBIDDEN, "Only travelers can subscribe");
+    }
+
+    const traveler = await prisma.traveler.findUniqueOrThrow({ where: { email: user.email } });
+
+    // Prevent subscribing to FREE
+    if (planType === SubscriptionPlan.FREE) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Cannot subscribe to FREE plan");
+    }
+
+    // Check if already subscribed
+    if (traveler.subscriptionPlan && traveler.subscriptionEnd && traveler.subscriptionEnd > new Date()) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "You already have an active subscription");
+    }
+
+    const plan = subscriptionPlans.find(p => p.type === planType);
+    if (!plan) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Invalid plan type");
+    }
+
+    if (!plan.stripePriceId) {
+        throw new ApiError(
+            httpStatus.INTERNAL_SERVER_ERROR,
+            "Stripe price ID not configured for this plan"
+        );
+    }
+
+
+    const session = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        line_items: [
+            {
+                price: plan.stripePriceId,
+                quantity: 1,
+            },
+        ],
+        success_url: `${config.client_url}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${config.client_url}/payment/cancel`,
+
+
+        metadata: {
+            travelerId: traveler.id,
+            planType: plan.type, 
+        },
+    });
+
+
+    console.log(session)
+
+    return {
+        sessionId: session.id,
+        url: session.url
+    };
+};
+
 export const SubscriptionService = {
     getPlans,
+    createCheckoutSession,
 };
