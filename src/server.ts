@@ -3,6 +3,7 @@ import app from './app';
 import config from './config';
 import { seedAdmin } from './app/helper/seedAdmin';
 import { TravelPlanService } from './app/modules/travelPlan/travelPlan.service';
+import { SubscriptionService } from './app/modules/subscription/subscription.service';
 
 
 async function bootstrap() {
@@ -13,6 +14,7 @@ async function bootstrap() {
         // Run Admin Seeder
         await seedAdmin();
         TravelPlanService.setupCronJobs();
+        SubscriptionService.setupCronJobs();
         // Start the server
         server = app.listen(config.port, () => {
             console.log(`🚀 Server is running on http://localhost:${config.port}`);

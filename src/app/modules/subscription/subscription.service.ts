@@ -166,9 +166,30 @@ const handleWebhook = async (req: Request) => {
     }
 };
 
+const setupCronJobs = () => {
+    const cron = require('node-cron');
+    // Run daily at midnight
+    cron.schedule('0 0 * * *', async () => {
+        console.log('🕒 Subscription cron running at:', new Date().toISOString());
+        const now = new Date();
+        await prisma.traveler.updateMany({
+            where: {
+                subscriptionEnd: { lt: now },
+            },
+            data: {
+                subscriptionPlan: null,
+                subscriptionStart: null,
+                subscriptionEnd: null,
+                isVerified: false,
+            },
+        });
+    });
+};
+
 export const SubscriptionService = {
     getPlans,
     createCheckoutSession,
     getMySubscriptionStatus,
     handleWebhook,
+    setupCronJobs
 };
