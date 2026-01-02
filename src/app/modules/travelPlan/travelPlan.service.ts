@@ -2,7 +2,6 @@ import { prisma } from "../../../lib/prisma";
 import { PlanStatus, Prisma, RequestStatus, TravelPlan, UserRole } from "../../../generated/prisma/client";
 import { IJWTPayload } from "../../types/common";
 import { CreateTravelPlanInput, SendRequestInput, UpdateRequestStatusInput, UpdateTravelPlanInput } from "./travelPlan.interface";
-
 import httpStatus from "http-status";
 import ApiError from "../../errors/ApiError";
 import { paginationHelper } from "../../helper/paginationHelper";
@@ -15,6 +14,24 @@ const createTravelPlan = async (user: IJWTPayload, payload: CreateTravelPlanInpu
     }
 
     const traveler = await prisma.traveler.findUniqueOrThrow({ where: { email: user.email } });
+
+    // Check subscription status
+    const now = new Date();
+    const isSubscribed = traveler.subscriptionPlan && traveler.subscriptionEnd && traveler.subscriptionEnd > now;
+
+    if (!isSubscribed) {
+        // Free user: Check if already has 1 or more non-deleted plans
+        const planCount = await prisma.travelPlan.count({
+            where: {
+                travelerId: traveler.id,
+                isDeleted: false,
+            },
+        });
+
+        if (planCount >= 1) {
+            throw new ApiError(httpStatus.FORBIDDEN, "Free users can create only 1 travel plan. Subscribe for unlimited.");
+        }
+    }
 
     return prisma.travelPlan.create({
         data: {
@@ -134,15 +151,15 @@ const getMyTravelPlans = async (user: IJWTPayload, params: any, options: any) =>
         }
     });
     const formatted = await Promise.all(
-  result.map(async (plan) => {
-    const { avgRating, totalReviews } = await ReviewService.getTravelerReviewSummary(plan.travelerId);
-    return {
-      ...plan,
-      buddyRequestsCount: plan._count.buddyRequests,
-      hostRating: { avgRating, totalReviews },
-    };
-  })
-);
+        result.map(async (plan) => {
+            const { avgRating, totalReviews } = await ReviewService.getTravelerReviewSummary(plan.travelerId);
+            return {
+                ...plan,
+                buddyRequestsCount: plan._count.buddyRequests,
+                hostRating: { avgRating, totalReviews },
+            };
+        })
+    );
     const total = await prisma.travelPlan.count({ where: whereConditions });
     const totalPages = Math.ceil(total / limit);
 
