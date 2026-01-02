@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
-import { SubscriptionService } from "./subscription.service";
 import { IJWTPayload } from "../../types/common";
+import { SubscriptionService } from "./subscription.service";
 
 const getPlans = catchAsync(async (req: Request, res: Response) => {
     const result = await SubscriptionService.getPlans();
@@ -27,7 +27,20 @@ const createCheckoutSession = catchAsync(async (req: Request & { user?: IJWTPayl
     });
 });
 
+const getMySubscriptionStatus = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
+    const user = req.user as IJWTPayload;
+    const result = await SubscriptionService.getMySubscriptionStatus(user);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Subscription status retrieved successfully!",
+        data: result,
+    });
+});
+
+
 export const SubscriptionController = {
     getPlans,
     createCheckoutSession,
+    getMySubscriptionStatus,
 };

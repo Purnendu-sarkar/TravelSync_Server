@@ -8,9 +8,15 @@ const router = express.Router();
 router.get("/plans", SubscriptionController.getPlans);
 
 router.post(
-  "/create-checkout",
-  auth(UserRole.TRAVELER),
-  SubscriptionController.createCheckoutSession
+    "/create-checkout",
+    auth(UserRole.TRAVELER),
+    SubscriptionController.createCheckoutSession
+);
+
+router.get(
+    "/my-status",
+    auth(UserRole.TRAVELER),
+    SubscriptionController.getMySubscriptionStatus
 );
 
 

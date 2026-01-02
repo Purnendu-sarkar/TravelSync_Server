@@ -55,10 +55,10 @@ const createCheckoutSession = async (user: IJWTPayload, planType: SubscriptionPl
         success_url: `${config.client_url}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${config.client_url}/payment/cancel`,
 
-
+        // 🔥 ADD THIS
         metadata: {
             travelerId: traveler.id,
-            planType: plan.type, 
+            planType: plan.type, // MONTHLY | YEARLY
         },
     });
 
@@ -71,7 +71,36 @@ const createCheckoutSession = async (user: IJWTPayload, planType: SubscriptionPl
     };
 };
 
+const getMySubscriptionStatus = async (user: IJWTPayload) => {
+    const traveler = await prisma.traveler.findUniqueOrThrow({
+        where: { email: user.email },
+        select: {
+            subscriptionPlan: true,
+            subscriptionStart: true,
+            subscriptionEnd: true,
+            isVerified: true,
+        },
+    });
+
+    const now = new Date();
+    const isActive = traveler.subscriptionEnd && traveler.subscriptionEnd > now;
+
+    let currentPlan = traveler.subscriptionPlan || 'FREE';
+    if (!isActive) {
+        currentPlan = 'FREE';
+    }
+
+    return {
+        plan: currentPlan,
+        start: traveler.subscriptionStart,
+        end: traveler.subscriptionEnd,
+        isActive,
+        isVerified: isActive ? traveler.isVerified : false,
+    };
+};
+
 export const SubscriptionService = {
     getPlans,
     createCheckoutSession,
+    getMySubscriptionStatus,
 };
