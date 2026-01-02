@@ -38,9 +38,15 @@ const getMySubscriptionStatus = catchAsync(async (req: Request & { user?: IJWTPa
     });
 });
 
+const webhook = catchAsync(async (req: Request, res: Response) => {
+    await SubscriptionService.handleWebhook(req);
+    res.status(200).json({ received: true });
+});
+
 
 export const SubscriptionController = {
     getPlans,
     createCheckoutSession,
     getMySubscriptionStatus,
+    webhook
 };
