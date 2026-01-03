@@ -1,16 +1,16 @@
+// user.service.ts (updated)
 import bcrypt from "bcryptjs";
 import { prisma } from "../../../lib/prisma";
 import { fileUploader } from "../../helper/fileUploader";
 import { Request } from "express";
 import config from "../../config";
 import { paginationHelper } from "../../helper/paginationHelper";
-import { Prisma, UserRole, UserStatus } from "../../../generated/prisma/client";
+import { Prisma, UserRole, UserStatus, PlanStatus } from "../../../generated/prisma/client";
 import { userSearchableFields } from "./user.constant";
 import { IJWTPayload } from "../../types/common";
 import { UpdateTravelerProfileInput } from "./user.interface";
 import { ReviewService } from "../review/review.service";
 import { SubscriptionService } from "../subscription/subscription.service";
-
 
 const createTraveler = async (req: Request) => {
     // 1. Handle profile image upload
@@ -229,11 +229,51 @@ const getSingleTraveler = async (email: string) => {
         ? await ReviewService.getTravelerReviewSummary(travelerId)
         : { avgRating: 0, totalReviews: 0 };
 
+    const completedPlansCount = travelerId
+        ? await prisma.travelPlan.count({
+            where: {
+                travelerId,
+                status: PlanStatus.COMPLETED,
+                isDeleted: false,
+            },
+        })
+        : 0;
+
     return {
         ...user,
         ...user.travelers,
         travelPlansCount: user.travelers?._count.travelPlans,
+        completedPlansCount,
         reviewSummary
+    };
+};
+
+const getPublicSingleTraveler = async (req: Request) => {
+    const { id } = req.params;
+    const traveler = await prisma.traveler.findUniqueOrThrow({
+        where: { id, isDeleted: false },
+        include: {
+            _count: {
+                select: { travelPlans: true },
+            },
+        },
+    });
+
+    const reviewSummary = await ReviewService.getTravelerReviewSummary(traveler.id);
+
+    const completedPlansCount = await prisma.travelPlan.count({
+        where: {
+            travelerId: traveler.id,
+            status: PlanStatus.COMPLETED,
+            isDeleted: false,
+        },
+    });
+
+    return {
+        ...traveler,
+        travelPlansCount: traveler._count.travelPlans,
+        completedPlansCount,
+        reviewSummary,
     };
 };
 
@@ -293,21 +333,29 @@ const getPublicTopTravelers = async (options: { limit: number }) => {
     const { limit } = options;
 
     const users = await prisma.user.findMany({
-        where: { role: UserRole.TRAVELER, status: UserStatus.ACTIVE, isDeleted: false },
+        where: {
+            role: UserRole.TRAVELER,
+            status: UserStatus.ACTIVE,
+            isDeleted: false,
+        },
         include: { travelers: true },
-        take: limit,
     });
 
     const formatted = await Promise.all(
         users.map(async (user) => {
             const traveler = user.travelers;
-
-            if (!traveler) {
-                return null; // safety
-            }
+            if (!traveler) return null;
 
             const { avgRating, totalReviews } =
                 await ReviewService.getTravelerReviewSummary(traveler.id);
+
+            const completedPlansCount = await prisma.travelPlan.count({
+                where: {
+                    travelerId: traveler.id,
+                    status: PlanStatus.COMPLETED,
+                    isDeleted: false,
+                },
+            });
 
             return {
                 id: traveler.id,
@@ -316,25 +364,104 @@ const getPublicTopTravelers = async (options: { limit: number }) => {
                 address: traveler.address,
                 avgRating,
                 totalReviews,
-
+                completedPlansCount,
             };
         })
     );
 
-    // null বাদ দাও
     const filtered = formatted.filter(Boolean) as any[];
 
     filtered.sort((a, b) => {
-        const ratingDiff = (b.avgRating ?? 0) - (a.avgRating ?? 0);
-        if (ratingDiff !== 0) return ratingDiff;
-
-        return (b.totalReviews ?? 0) - (a.totalReviews ?? 0);
+        if (b.completedPlansCount !== a.completedPlansCount) {
+            return b.completedPlansCount - a.completedPlansCount;
+        }
+        if (b.avgRating !== a.avgRating) {
+            return b.avgRating - a.avgRating;
+        }
+        return b.totalReviews - a.totalReviews;
     });
 
-
-    return filtered;
-
+    return filtered.slice(0, limit);
 };
+
+
+const getPublicAllTravelers = async (params: any, options: any) => {
+    const { page, limit, skip } =
+        paginationHelper.calculatePagination(options);
+
+    const { searchTerm, ...filterData } = params;
+    const andConditions: Prisma.TravelerWhereInput[] = [];
+
+    if (searchTerm) {
+        andConditions.push({
+            OR: [
+                { name: { contains: searchTerm, mode: "insensitive" } },
+                { address: { contains: searchTerm, mode: "insensitive" } },
+            ],
+        });
+    }
+
+    andConditions.push({
+        isDeleted: false,
+        user: { status: UserStatus.ACTIVE },
+    });
+
+    const whereConditions =
+        andConditions.length > 0 ? { AND: andConditions } : {};
+
+    const travelers = await prisma.traveler.findMany({
+        where: whereConditions,
+    });
+
+    const ranked = await Promise.all(
+        travelers.map(async (traveler) => {
+            const { avgRating, totalReviews } =
+                await ReviewService.getTravelerReviewSummary(traveler.id);
+
+            const completedPlansCount = await prisma.travelPlan.count({
+                where: {
+                    travelerId: traveler.id,
+                    status: PlanStatus.COMPLETED,
+                    isDeleted: false,
+                },
+            });
+
+            return {
+                id: traveler.id,
+                name: traveler.name,
+                profilePhoto: traveler.profilePhoto,
+                address: traveler.address,
+                avgRating,
+                totalReviews,
+                completedPlansCount,
+            };
+        })
+    );
+
+    // ✅ ranking
+    ranked.sort((a, b) => {
+        if (b.completedPlansCount !== a.completedPlansCount) {
+            return b.completedPlansCount - a.completedPlansCount;
+        }
+        if (b.avgRating !== a.avgRating) {
+            return b.avgRating - a.avgRating;
+        }
+        return b.totalReviews - a.totalReviews;
+    });
+
+    const paginated = ranked.slice(skip, skip + limit);
+
+    return {
+        meta: {
+            page,
+            limit,
+            total: ranked.length,
+            totalPages: Math.ceil(ranked.length / limit),
+        },
+        data: paginated,
+    };
+};
+
 
 export const UserService = {
     createTraveler,
@@ -344,5 +471,7 @@ export const UserService = {
     updateMyProfile,
     updateUserStatus,
     deleteTravelerByEmail,
-    getPublicTopTravelers
+    getPublicTopTravelers,
+    getPublicAllTravelers,
+    getPublicSingleTraveler,
 }

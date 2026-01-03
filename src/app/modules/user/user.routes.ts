@@ -1,3 +1,4 @@
+// user.routes.ts (updated)
 import express, { NextFunction, Request, Response } from "express"
 import { UserController } from "./user.controller";
 import { fileUploader } from "../../helper/fileUploader";
@@ -8,6 +9,8 @@ import { UserRole } from "../../../generated/prisma/enums";
 const router = express.Router();
 
 router.get("/public-top", UserController.getPublicTopTravelers);
+router.get("/public-all", UserController.getPublicAllTravelers);
+router.get("/public/:id", UserController.getPublicSingleTraveler);
 
 router.get(
     "/",

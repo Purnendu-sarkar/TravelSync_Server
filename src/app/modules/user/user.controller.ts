@@ -1,3 +1,4 @@
+// user.controller.ts (updated)
 import { Request, Response } from "express";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
@@ -111,6 +112,30 @@ const getPublicTopTravelers = catchAsync(
     }
 );
 
+const getPublicAllTravelers = catchAsync(async (req: Request, res: Response) => {
+    const filters = pick(req.query, userFilterableFields);
+    const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+
+    const result = await UserService.getPublicAllTravelers(filters, options);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "All public travelers retrieved successfully!",
+        data: result,
+    });
+});
+
+const getPublicSingleTraveler = catchAsync(async (req: Request, res: Response) => {
+    const result = await UserService.getPublicSingleTraveler(req);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Public traveler details retrieved successfully!",
+        data: result,
+    });
+});
 
 export const UserController = {
     createTraveler,
@@ -121,4 +146,6 @@ export const UserController = {
     updateUserStatus,
     deleteTravelerByEmail,
     getPublicTopTravelers,
+    getPublicAllTravelers,
+    getPublicSingleTraveler,
 }
