@@ -7,6 +7,7 @@ import { UserRole } from "../../../generated/prisma/enums";
 
 const router = express.Router();
 
+router.get("/public-top", UserController.getPublicTopTravelers);
 
 router.get(
     "/",

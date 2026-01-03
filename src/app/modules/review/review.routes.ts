@@ -7,5 +7,6 @@ const router = express.Router();
 
 router.post("/", auth(UserRole.TRAVELER), ReviewController.createReview);
 router.get("/me", auth(UserRole.TRAVELER), ReviewController.getMyReviews);
+router.get("/public", ReviewController.getPublicReviews);
 
 export const reviewRoutes = router;

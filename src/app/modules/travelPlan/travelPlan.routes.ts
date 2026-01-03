@@ -6,6 +6,7 @@ import { TravelPlanValidation } from "./travelPlan.validation";
 
 const router = express.Router();
 
+router.get("/public", TravelPlanController.getPublicPlans);
 router.get("/", TravelPlanController.getAllFromDB);
 router.get("/match", TravelPlanController.getMatchedTravelPlans);
 

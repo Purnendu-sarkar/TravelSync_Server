@@ -289,6 +289,53 @@ const deleteTravelerByEmail = async (email: string) => {
     return user;
 };
 
+const getPublicTopTravelers = async (options: { limit: number }) => {
+    const { limit } = options;
+
+    const users = await prisma.user.findMany({
+        where: { role: UserRole.TRAVELER, status: UserStatus.ACTIVE, isDeleted: false },
+        include: { travelers: true },
+        take: limit,
+    });
+
+    const formatted = await Promise.all(
+        users.map(async (user) => {
+            const traveler = user.travelers;
+
+            if (!traveler) {
+                return null; // safety
+            }
+
+            const { avgRating, totalReviews } =
+                await ReviewService.getTravelerReviewSummary(traveler.id);
+
+            return {
+                id: traveler.id,
+                name: traveler.name,
+                profilePhoto: traveler.profilePhoto,
+                address: traveler.address,
+                avgRating,
+                totalReviews,
+
+            };
+        })
+    );
+
+    // null বাদ দাও
+    const filtered = formatted.filter(Boolean) as any[];
+
+    filtered.sort((a, b) => {
+        const ratingDiff = (b.avgRating ?? 0) - (a.avgRating ?? 0);
+        if (ratingDiff !== 0) return ratingDiff;
+
+        return (b.totalReviews ?? 0) - (a.totalReviews ?? 0);
+    });
+
+
+    return filtered;
+
+};
+
 export const UserService = {
     createTraveler,
     getAllFromDB,
@@ -296,5 +343,6 @@ export const UserService = {
     getSingleTraveler,
     updateMyProfile,
     updateUserStatus,
-    deleteTravelerByEmail
+    deleteTravelerByEmail,
+    getPublicTopTravelers
 }

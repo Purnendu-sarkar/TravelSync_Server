@@ -28,7 +28,22 @@ const getMyReviews = catchAsync(async (req: Request & { user?: IJWTPayload }, re
     });
 });
 
+const getPublicReviews = catchAsync(
+  async (req: Request, res: Response) => {
+    const limit = Number(req.query.limit) || 3;
+    const result = await ReviewService.getPublicReviews({ limit });
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Public reviews retrieved successfully!",
+      data: result,
+    });
+  }
+);
+
 export const ReviewController = {
     createReview,
     getMyReviews,
+    getPublicReviews
 }; 

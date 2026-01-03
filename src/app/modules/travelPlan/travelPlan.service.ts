@@ -659,6 +659,56 @@ const setupCronJobs = () => {
     });
 };
 
+const getPublicPlans = async () => {
+    const limit = 3;
+
+    const whereConditions: Prisma.TravelPlanWhereInput = {
+        AND: [
+            { isDeleted: false },
+            {
+                status: {
+                    in: [PlanStatus.PENDING, PlanStatus.ONGOING],
+                },
+            },
+        ],
+    };
+
+    const plans = await prisma.travelPlan.findMany({
+        take: limit,
+        where: whereConditions,
+        orderBy: { createdAt: "desc" },
+        include: {
+            traveler: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    profilePhoto: true,
+                    _count: { select: { travelPlans: true } },
+                },
+            },
+        },
+    });
+
+    console.log(plans)
+
+    const formatted = await Promise.all(
+        plans.map(async (plan) => {
+            const { avgRating, totalReviews } =
+                await ReviewService.getTravelerReviewSummary(plan.travelerId);
+
+            return {
+                ...plan,
+                travelerPlanCount: plan.traveler?._count?.travelPlans || 0,
+                hostRating: { avgRating, totalReviews },
+            };
+        })
+    );
+
+    return formatted;
+};
+
+
 export const TravelPlanService = {
     createTravelPlan,
     getAllFromDB,
@@ -676,4 +726,5 @@ export const TravelPlanService = {
     startTravelPlan,
     completeTravelPlan,
     setupCronJobs,
+    getPublicPlans
 };

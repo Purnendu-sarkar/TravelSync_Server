@@ -4,7 +4,7 @@ import sendResponse from "../../shared/sendResponse";
 import { TravelPlanService } from "./travelPlan.service";
 import { IJWTPayload } from "../../types/common";
 import pick from "../../helper/pick";
-import {  requestFilterableFields, travelPlanFilterableFields } from "./travelPlan.constant";
+import { requestFilterableFields, travelPlanFilterableFields } from "./travelPlan.constant";
 
 const createTravelPlan = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
     const user = req.user as IJWTPayload;
@@ -207,6 +207,18 @@ const completeTravelPlan = catchAsync(async (req: Request & { user?: IJWTPayload
     });
 });
 
+const getPublicPlans = catchAsync(async (req, res) => {
+    const result = await TravelPlanService.getPublicPlans();
+    console.log(result)
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Public travel plans retrieved successfully!",
+        data: result,
+    });
+});
+
 export const TravelPlanController = {
     createTravelPlan,
     getAllFromDB,
@@ -222,5 +234,6 @@ export const TravelPlanController = {
     updateRequestStatus,
     getMySentRequests,
     startTravelPlan,
-    completeTravelPlan
+    completeTravelPlan,
+    getPublicPlans
 };

@@ -124,9 +124,22 @@ const getReviewsForTravelPlan = async (travelPlanId: string) => {
   });
 };
 
+const getPublicReviews = async (options: { limit: number }) => {
+  const { limit } = options;
+  return await prisma.review.findMany({
+    take: limit,
+    orderBy: { createdAt: "desc" },
+    include: {
+      reviewer: { select: { name: true, profilePhoto: true } },
+      travelPlan: { select: { destination: true } },
+    },
+  });
+};
+
 export const ReviewService = {
   createReview,
   getMyReceivedReviews,
-    getTravelerReviewSummary,
-    getReviewsForTravelPlan,
+  getTravelerReviewSummary,
+  getReviewsForTravelPlan,
+  getPublicReviews
 };

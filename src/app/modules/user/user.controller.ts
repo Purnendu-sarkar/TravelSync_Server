@@ -97,6 +97,21 @@ const deleteTravelerByEmail = catchAsync(async (req: Request, res: Response) => 
     });
 });
 
+const getPublicTopTravelers = catchAsync(
+    async (req: Request, res: Response) => {
+        const limit = Number(req.query.limit) || 4;
+        const result = await UserService.getPublicTopTravelers({ limit });
+
+        sendResponse(res, {
+            statusCode: 200,
+            success: true,
+            message: "Top travelers retrieved successfully!",
+            data: result,
+        });
+    }
+);
+
+
 export const UserController = {
     createTraveler,
     getAllFromDB,
@@ -105,4 +120,5 @@ export const UserController = {
     updateMyProfile,
     updateUserStatus,
     deleteTravelerByEmail,
+    getPublicTopTravelers,
 }
