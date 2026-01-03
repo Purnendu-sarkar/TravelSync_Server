@@ -57,19 +57,20 @@ const getSingleTraveler = catchAsync(async (req, res) => {
     });
 });
 
-const updateMyProfile = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
-    const user = req.user;
-    const payload = req.body;
+const updateMyProfile = catchAsync(
+  async (req: Request & { user?: IJWTPayload }, res: Response) => {
 
-    const result = await UserService.updateMyProfile(user as IJWTPayload, payload);
+    const result = await UserService.updateMyProfile(req);
 
     sendResponse(res, {
-        statusCode: 200,
-        success: true,
-        message: "Profile updated successfully!",
-        data: result
+      statusCode: 200,
+      success: true,
+      message: "Profile updated successfully!",
+      data: result,
     });
-});
+  }
+);
+
 
 const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
     const { email } = req.params;

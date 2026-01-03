@@ -1,4 +1,3 @@
-// user.service.ts (updated)
 import bcrypt from "bcryptjs";
 import { prisma } from "../../../lib/prisma";
 import { fileUploader } from "../../helper/fileUploader";
@@ -153,56 +152,89 @@ const getAllFromDB = async (params: any, options: any) => {
 };
 
 const getMyProfile = async (user: IJWTPayload) => {
+    // 1️⃣ Get base user info
     const userInfo = await prisma.user.findUniqueOrThrow({
-        where: { email: user.email, status: UserStatus.ACTIVE },
+        where: {
+            email: user.email,
+            status: UserStatus.ACTIVE,
+        },
         omit: {
             password: true,
             needPasswordChange: true,
             createdAt: true,
-            updatedAt: true
-        }
+            updatedAt: true,
+        },
     });
+
     let profileData: any = {};
     let reviewSummary = { avgRating: 0, totalReviews: 0 };
 
-    // ✅ FIX: declare variable
     let subscriptionStatus: Awaited<
         ReturnType<typeof SubscriptionService.getMySubscriptionStatus>
     > | null = null;
 
+    let completedPlansCount = 0;
+    let travelPlansCount = 0;
+
+    // 2️⃣ Traveler Profile
     if (userInfo.role === UserRole.TRAVELER) {
-        profileData = await prisma.traveler.findUnique({
+        profileData = await prisma.traveler.findUniqueOrThrow({
             where: { email: userInfo.email },
             include: {
                 _count: {
-                    select: { travelPlans: true },
+                    select: {
+                        travelPlans: true,
+                    },
                 },
             },
             omit: {
                 createdAt: true,
-                updatedAt: true
-            }
+                updatedAt: true,
+            },
         });
 
-        reviewSummary = await ReviewService.getTravelerReviewSummary(profileData!.id);
+        travelPlansCount = profileData._count.travelPlans;
 
-        // ✅ now safe
+        // ✅ Completed plans
+        completedPlansCount = await prisma.travelPlan.count({
+            where: {
+                travelerId: profileData.id,
+                status: PlanStatus.COMPLETED,
+                isDeleted: false,
+            },
+        });
+
+        // ✅ Reviews
+        reviewSummary =
+            await ReviewService.getTravelerReviewSummary(profileData.id);
+
+        // ✅ Subscription
         subscriptionStatus =
             await SubscriptionService.getMySubscriptionStatus(user);
+    }
 
-    } else if (userInfo.role === UserRole.ADMIN) {
-        profileData = await prisma.admin.findUnique({
-            where: { email: userInfo.email }
+    // 3️⃣ Admin Profile
+    if (userInfo.role === UserRole.ADMIN) {
+        profileData = await prisma.admin.findUniqueOrThrow({
+            where: { email: userInfo.email },
+            omit: {
+                createdAt: true,
+                updatedAt: true,
+            },
         });
     }
 
+    // 4️⃣ Final Response
     return {
         ...userInfo,
         ...profileData,
+        travelPlansCount,
+        completedPlansCount,
         reviewSummary,
         subscription: subscriptionStatus,
     };
 };
+
 
 const getSingleTraveler = async (email: string) => {
     const user = await prisma.user.findUniqueOrThrow({
@@ -277,14 +309,29 @@ const getPublicSingleTraveler = async (req: Request) => {
     };
 };
 
-const updateMyProfile = async (
-    user: IJWTPayload,
-    payload: UpdateTravelerProfileInput
-) => {
-    return prisma.traveler.update({
-        where: { email: user.email },
-        data: payload
+const updateMyProfile = async (req: Request) => {
+  const user = req.user as IJWTPayload;
+  let payload = req.body;
+
+  if (req.file) {
+    const uploadResult = await fileUploader.uploadToCloudinary(req.file);
+    payload.profilePhoto = uploadResult?.secure_url;
+  }
+
+  let result;
+  if (user.role === UserRole.TRAVELER) {
+    result = await prisma.traveler.update({
+      where: { email: user.email },
+      data: payload,
     });
+  } else if (user.role === UserRole.ADMIN) {
+    result = await prisma.admin.update({
+      where: { email: user.email },
+      data: payload,
+    });
+  }
+
+  return result;
 };
 
 const updateUserStatus = async (email: string, status: UserStatus) => {

@@ -1,4 +1,3 @@
-// user.routes.ts (updated)
 import express, { NextFunction, Request, Response } from "express"
 import { UserController } from "./user.controller";
 import { fileUploader } from "../../helper/fileUploader";
@@ -32,9 +31,21 @@ router.get(
 
 router.patch(
     "/me",
-    auth(UserRole.TRAVELER),
-    UserController.updateMyProfile
+    auth(UserRole.TRAVELER, UserRole.ADMIN),
+    fileUploader.upload.single("file"),
+    (req: Request, res: Response, next: NextFunction) => {
+        if (req.body.data) {
+            req.body = JSON.parse(req.body.data);
+        }
+        return UserController.updateMyProfile(req, res, next);
+    }
 );
+
+// router.patch(
+//     "/me",
+//     auth(UserRole.TRAVELER),
+//     UserController.updateMyProfile
+// );
 
 router.patch(
     "/:email/status",

@@ -11,7 +11,8 @@ const app: Application = express();
 app.use(cors({
     origin: [
         'http://localhost:3000',
-        'https://travel-sync-five.vercel.app'
+        'https://travel-sync-five.vercel.app',
+        'https://travel-sync-frontend-sandy.vercel.app'
     ],
     credentials: true
 }));
