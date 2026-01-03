@@ -5,10 +5,11 @@ import { AuthService } from "./auth.service";
 import config from "../../config";
 
 const cookieOptions = {
-    httpOnly: true,
-    secure: config.node_env === "production",
-    sameSite: config.node_env === "production" ? "none" as const : "lax" as const,
+  httpOnly: true,
+  secure: true,
+  sameSite: "none" as const,
 };
+
 
 
 const login = catchAsync(async (req: Request, res: Response) => {
