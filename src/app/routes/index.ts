@@ -4,6 +4,7 @@ import { authRoutes } from '../modules/auth/auth.routes';
 import { travelPlanRoutes } from '../modules/travelPlan/travelPlan.routes';
 import { reviewRoutes } from '../modules/review/review.routes';
 import { subscriptionRoutes } from '../modules/subscription/subscription.routes';
+import { metaRoutes } from '../modules/meta/meta.routes';
 
 
 const router = express.Router();
@@ -28,6 +29,10 @@ const moduleRoutes = [
     {
         path: '/subscriptions',
         route: subscriptionRoutes
+    },
+    {
+        path: '/meta',
+        route: metaRoutes
     },
 ];
 
