@@ -18,7 +18,7 @@ app.use(cors({
 }));
 
 app.post(
-    "/api/v1/subscriptions/webhook",
+    "/webhook",
     express.raw({ type: "application/json" }),
     SubscriptionController.webhook
 );
