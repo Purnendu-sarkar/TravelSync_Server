@@ -54,7 +54,7 @@ The backend is built with **Node.js, Express.js, TypeScript, Prisma ORM, and Pos
 
 ## 📂 Project Structure
 
-````text
+```text
 src/
 ├── app/
 │   ├── modules/
@@ -70,8 +70,7 @@ src/
 ├── helper/                 # JWT, pagination, file upload
 ├── lib/prisma/             # Prisma client
 └── shared/                 # catchAsync, sendResponse
-
-
+```
 
 ---
 
@@ -105,22 +104,22 @@ GET    /api/v1/subscriptions/my-status
 
 # Dashboard Meta
 GET    /api/v1/meta                          # Admin & Traveler stats
-````
+```
 
 ---
 
 ### 🧑‍💻 Admin Credentials (Required for Evaluation)
 
-Important: Use these to test admin features
-Admin Email: admin@travelbuddy.com
-Password: SuperSecure123
+Important: Use these to test admin features  
+Admin Email: admin@travelbuddy.com  
+Password: SuperSecure123  
 (The admin is automatically created on server startup via `seedAdmin.ts`)
 
 ---
 
-### 🚀 Setup & Run Locally
+# 🚀 Setup & Run Locally
 
-# Clone repository
+## Clone repository
 
 ```bash
 
@@ -130,11 +129,15 @@ cd travel-sync-server
 
 # Install dependencies
 
+```bash
 npm install
+```
 
 # Copy environment variables
 
+```bash
 cp .env.example .env
+```
 
 # Configure .env (required)
 
@@ -160,21 +163,44 @@ CLIENT_URL=http://localhost:3000
   npm run dev
 ```
 
-Server will run at: `bash  http://localhost:5000 `
+Server will run at: ` http://localhost:5000`
 
 ---
 
 ### 🌍 Deployment
 
-Platform: Render
-Database: PostgreSQL (Neon / Supabase)
+Platform: Render  
+Database: PostgreSQL (Neon / Supabase)  
 Environment Variables: All values from .env must be set in production
+
+---
+
+### 🚀 Future Enhancements (Roadmap)
+
+Here are some exciting features and improvements planned to make **TravelSync** even bigger and more powerful in the future:
+
+| Feature                        | Description                                                                | Priority |
+| ------------------------------ | -------------------------------------------------------------------------- | -------- |
+| **Real-Time Chat & Messaging** | In-app messaging between matched travelers and buddy request conversations | High     |
+| **Live Notifications**         | Push/email notifications for request updates, new matches, messages        | High     |
+| **Google Maps Integration**    | Interactive maps to visualize destinations, routes, and nearby travelers   | High     |
+| **Trip Photo Gallery**         | Users can upload and share photos from completed trips (post-trip album)   | Medium   |
+| **Group Travel Support**       | Allow multiple buddies per plan and group chat for accepted members        | Medium   |
+| **Advanced Filters**           | Add filters for age, language, smoking preference, dietary restrictions    | Medium   |
+| **Mobile App (React Native)**  | Native iOS & Android apps for on-the-go experience                         | Medium   |
+| **Travel Feed & Stories**      | Instagram-like stories and activity feed of public trips                   | Low      |
+| **AI-Powered Matching**        | Use machine learning to suggest better matches based on past behavior      | Low      |
+| **Multi-Language Support**     | Internationalization (i18n) for global users                               | Low      |
+| **Trip Expenses Sharing**      | Simple tool to split costs among buddies                                   | Low      |
+| **Partner Integrations**       | Affiliate links with booking.com, Airbnb, flight APIs                      | Low      |
+
+## These enhancements will transform TravelSync from a great matching platform into a complete **social travel ecosystem**. Contributions and ideas are always welcome! 🌍✨
 
 ---
 
 ### 👨‍💻 Developed By
 
-**Purnendu Sarkar**
-Full-Stack Developer | Travel Enthusiast ✈️
-GitHub: https://github.com/Purnendu-sarkar
+**Purnendu Sarkar**  
+Full-Stack Developer | Travel Enthusiast ✈️  
+GitHub: https://github.com/Purnendu-sarkar  
 LinkedIn: https://www.linkedin.com/in/purnendusarkar
