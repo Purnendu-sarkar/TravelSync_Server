@@ -1,10 +1,10 @@
 # TravelSync – Backend Server (Travel Buddy & Meetup Platform)
 
 **Backend Repository:** https://github.com/Purnendu-sarkar/TravelSync_Server  
-**Live API Base URL:** https://travelsync-server.onrender.com/api/v1     
-**Frontend Repository:** https://github.com/Purnendu-sarkar/TravelSync_Frontend     
-**Live Website:** https://travel-sync-frontend-sandy.vercel.app 
-**Video Demonstration:** 
+**Live API Base URL:** https://travelsync-server.onrender.com/api/v1  
+**Frontend Repository:** https://github.com/Purnendu-sarkar/TravelSync_Frontend  
+**Live Website:** https://travel-sync-frontend-sandy.vercel.app  
+**Video Demonstration:**
 
 ---
 
@@ -18,42 +18,43 @@ The backend is built with **Node.js, Express.js, TypeScript, Prisma ORM, and Pos
 
 ### ✨ Core Backend Features
 
-| Feature                          | Status | Description |
-|----------------------------------|--------|-----------|
-| User Registration & Login        | ✅     | Email + Password with JWT + Refresh Token |
-| Role-Based Authorization         | ✅     | Traveler & Admin roles with middleware |
-| Profile Management               | ✅     | Full CRUD + Cloudinary image upload |
-| Travel Plan Management           | ✅     | Create, update, delete, status transitions |
-| Advanced Matching Engine         | ✅     | Destination, dates overlap, budget, type, interests + match score |
-| Buddy Request System             | ✅     | Send, accept, reject requests |
-| Review & Rating System           | ✅     | Post-trip reviews with unique constraint |
-| Subscription & Payment           | ✅     | Stripe monthly/yearly plans + webhook |
-| Verified Badge                   | ✅     | Auto-granted on successful subscription |
-| Admin Dashboard & Management     | ✅     | User blocking, plan deletion, analytics |
-| Cron Jobs                        | ✅     | Auto plan status update & subscription expiry |
-| Global Error Handling            | ✅     | Friendly messages + Prisma error parsing |
+| Feature                      | Status | Description                                                       |
+| ---------------------------- | ------ | ----------------------------------------------------------------- |
+| User Registration & Login    | ✅     | Email + Password with JWT + Refresh Token                         |
+| Role-Based Authorization     | ✅     | Traveler & Admin roles with middleware                            |
+| Profile Management           | ✅     | Full CRUD + Cloudinary image upload                               |
+| Travel Plan Management       | ✅     | Create, update, delete, status transitions                        |
+| Advanced Matching Engine     | ✅     | Destination, dates overlap, budget, type, interests + match score |
+| Buddy Request System         | ✅     | Send, accept, reject requests                                     |
+| Review & Rating System       | ✅     | Post-trip reviews with unique constraint                          |
+| Subscription & Payment       | ✅     | Stripe monthly/yearly plans + webhook                             |
+| Verified Badge               | ✅     | Auto-granted on successful subscription                           |
+| Admin Dashboard & Management | ✅     | User blocking, plan deletion, analytics                           |
+| Cron Jobs                    | ✅     | Auto plan status update & subscription expiry                     |
+| Global Error Handling        | ✅     | Friendly messages + Prisma error parsing                          |
 
 ---
 
 ### 🛠 Technology Stack
 
-| Category       | Technology                                      |
-|----------------|-------------------------------------------------|
-| Runtime        | Node.js + TypeScript                            |
-| Framework      | Express.js                                      |
-| ORM            | Prisma + PostgreSQL                             |
-| Authentication | JWT (Access + Refresh) + HTTP-only cookies       |
-| File Upload    | Multer + Cloudinary                             |
-| Payment        | Stripe (Subscriptions + Webhook)                |
-| Email          | Nodemailer (Gmail SMTP)                         |
-| Validation     | Zod                                             |
-| Error Handling | Custom ApiError + Global handler                |
-| Utilities      | node-cron, bcryptjs, http-status                |
+| Category       | Technology                                 |
+| -------------- | ------------------------------------------ |
+| Runtime        | Node.js + TypeScript                       |
+| Framework      | Express.js                                 |
+| ORM            | Prisma + PostgreSQL                        |
+| Authentication | JWT (Access + Refresh) + HTTP-only cookies |
+| File Upload    | Multer + Cloudinary                        |
+| Payment        | Stripe (Subscriptions + Webhook)           |
+| Email          | Nodemailer (Gmail SMTP)                    |
+| Validation     | Zod                                        |
+| Error Handling | Custom ApiError + Global handler           |
+| Utilities      | node-cron, bcryptjs, http-status           |
 
 ---
 
-### 📂 Project Structure
+## 📂 Project Structure
 
+````text
 src/
 ├── app/
 │   ├── modules/
@@ -69,6 +70,7 @@ src/
 ├── helper/                 # JWT, pagination, file upload
 ├── lib/prisma/             # Prisma client
 └── shared/                 # catchAsync, sendResponse
+
 
 
 ---
@@ -103,30 +105,40 @@ GET    /api/v1/subscriptions/my-status
 
 # Dashboard Meta
 GET    /api/v1/meta                          # Admin & Traveler stats
+````
 
 ---
 
-🧑‍💻 Admin Credentials (Required for Evaluation)
+### 🧑‍💻 Admin Credentials (Required for Evaluation)
+
 Important: Use these to test admin features
 Admin Email: admin@travelbuddy.com
 Password: SuperSecure123
-(The admin is automatically created on server startup via seedAdmin.ts)
+(The admin is automatically created on server startup via `seedAdmin.ts`)
 
 ---
 
-🚀 Setup & Run Locally
+### 🚀 Setup & Run Locally
 
 # Clone repository
-git clone https://github.com/purnendu01/travel-sync-server.git
+
+```bash
+
+git clone https://github.com/Purnendu-sarkar/TravelSync_Server
 cd travel-sync-server
+```
 
 # Install dependencies
+
 npm install
 
 # Copy environment variables
+
 cp .env.example .env
 
 # Configure .env (required)
+
+```bash
 DATABASE_URL=postgresql://...
 JWT_ACCESS_SECRET=...
 JWT_REFRESH_SECRET=...
@@ -140,20 +152,29 @@ EMAIL_SENDER_APP_PASS=...
 ADMIN_EMAIL=admin@travelbuddy.com
 ADMIN_PASSWORD=SuperSecure123
 CLIENT_URL=http://localhost:3000
+```
 
 # Run in development
-npm run dev
 
-Server will run at: http://localhost:5000
+```bash
+  npm run dev
+```
 
-🌍 Deployment
+Server will run at: `bash  http://localhost:5000 `
+
+---
+
+### 🌍 Deployment
 
 Platform: Render
 Database: PostgreSQL (Neon / Supabase)
 Environment Variables: All values from .env must be set in production
 
-👨‍💻 Developed By
-Purnendu Sarkar
+---
+
+### 👨‍💻 Developed By
+
+**Purnendu Sarkar**
 Full-Stack Developer | Travel Enthusiast ✈️
 GitHub: https://github.com/Purnendu-sarkar
 LinkedIn: https://www.linkedin.com/in/purnendusarkar
