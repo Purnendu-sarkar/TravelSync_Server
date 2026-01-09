@@ -4,7 +4,7 @@
 **Live API Base URL:** https://travelsync-server.onrender.com/api/v1  
 **Frontend Repository:** https://github.com/Purnendu-sarkar/TravelSync_Frontend  
 **Live Website:** https://travel-sync-frontend-sandy.vercel.app  
-**Video Demonstration:**
+**Video Demonstration:** https://drive.google.com/file/d/1eSukxKPAZqCQuMQUTRPsZ_uTkXGCYYOr/view?usp=sharing
 
 ---
 

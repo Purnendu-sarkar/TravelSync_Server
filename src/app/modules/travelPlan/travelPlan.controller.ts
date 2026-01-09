@@ -209,7 +209,7 @@ const completeTravelPlan = catchAsync(async (req: Request & { user?: IJWTPayload
 
 const getPublicPlans = catchAsync(async (req, res) => {
     const result = await TravelPlanService.getPublicPlans();
-    console.log(result)
+    // console.log(result)
 
     sendResponse(res, {
         statusCode: 200,

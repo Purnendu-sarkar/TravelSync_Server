@@ -18,7 +18,7 @@ const createCheckoutSession = catchAsync(async (req: Request & { user?: IJWTPayl
     const user = req.user as IJWTPayload;
     const { planType } = req.body;
     const result = await SubscriptionService.createCheckoutSession(user, planType);
-    console.log(result)
+    // console.log(result)
     sendResponse(res, {
         statusCode: 200,
         success: true,

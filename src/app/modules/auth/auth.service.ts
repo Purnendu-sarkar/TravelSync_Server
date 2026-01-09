@@ -154,7 +154,7 @@ const resetPassword = async (token: string | null, payload: { email?: string, pa
     }
     // Case 2: Authenticated user with needPasswordChange (newly created admin/doctor)
     else if (user && user.email) {
-        console.log({ user }, "needpassworchange");
+        // console.log({ user }, "needpassworchange");
         const authenticatedUser = await prisma.user.findUniqueOrThrow({
             where: {
                 email: user.email,

@@ -64,7 +64,7 @@ const createCheckoutSession = async (user: IJWTPayload, planType: SubscriptionPl
     });
 
 
-    console.log(session)
+    // console.log(session)
 
     return {
         sessionId: session.id,
@@ -105,13 +105,13 @@ const handleWebhook = async (req: Request) => {
     let event: Stripe.Event;
 
     try {
-        console.log('Webhook received - Verifying signature...');
+        // console.log('Webhook received - Verifying signature...');
         event = stripe.webhooks.constructEvent(
             req.body,
             sig,
             config.stripe.webhook_secret as string
         );
-        console.log('Webhook verified - Event type:', event.type);
+        // console.log('Webhook verified - Event type:', event.type);
     } catch (err: any) {
         console.error('Signature verification failed:', err.message);
         // throw new ApiError(httpStatus.BAD_REQUEST, `Webhook Error: ${err.message}`);
@@ -162,7 +162,7 @@ const handleWebhook = async (req: Request) => {
             });
         });
 
-        console.log("✅ Subscription activated for:", travelerId);
+        // console.log("✅ Subscription activated for:", travelerId);
     }
 };
 
@@ -170,7 +170,7 @@ const setupCronJobs = () => {
     const cron = require('node-cron');
     // Run daily at midnight
     cron.schedule('0 0 * * *', async () => {
-        console.log('🕒 Subscription cron running at:', new Date().toISOString());
+        // console.log('🕒 Subscription cron running at:', new Date().toISOString());
         const now = new Date();
         await prisma.traveler.updateMany({
             where: {

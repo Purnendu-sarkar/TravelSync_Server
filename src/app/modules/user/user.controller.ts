@@ -1,4 +1,3 @@
-// user.controller.ts (updated)
 import { Request, Response } from "express";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
@@ -9,7 +8,7 @@ import { IJWTPayload } from "../../types/common";
 
 const createTraveler = catchAsync(async (req: Request, res: Response) => {
     const result = await UserService.createTraveler(req);
-    console.log(result)
+    // console.log(result)
 
     sendResponse(res, {
         statusCode: 201,

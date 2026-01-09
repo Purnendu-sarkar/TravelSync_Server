@@ -635,7 +635,7 @@ const setupCronJobs = () => {
         today.setHours(0, 0, 0, 0);
 
 
-        console.log("Cron Called")
+        // console.log("Cron Called")
 
         // Auto-start pending plans where startDate <= currentDate
         await prisma.travelPlan.updateMany({
@@ -690,7 +690,7 @@ const getPublicPlans = async () => {
         },
     });
 
-    console.log(plans)
+    // console.log(plans)
 
     const formatted = await Promise.all(
         plans.map(async (plan) => {
