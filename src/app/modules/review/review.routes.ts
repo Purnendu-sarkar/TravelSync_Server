@@ -13,5 +13,6 @@ router.post("/", auth(UserRole.TRAVELER), ReviewController.createReview);
 
 router.patch("/:id", auth(UserRole.TRAVELER), ReviewController.updateReview);
 
+router.delete("/:id", auth(UserRole.TRAVELER), ReviewController.deleteReview);
 
 export const reviewRoutes = router;

@@ -188,6 +188,24 @@ const updateReview = async (user: IJWTPayload, reviewId: string, payload: Update
   });
 };
 
+const deleteReview = async (user: IJWTPayload, reviewId: string) => {
+  const traveler = await prisma.traveler.findUniqueOrThrow({
+    where: { email: user.email },
+  });
+
+  const review = await prisma.review.findUniqueOrThrow({
+    where: { id: reviewId },
+  });
+
+  if (review.reviewerId !== traveler.id) {
+    throw new ApiError(httpStatus.FORBIDDEN, "You can only delete your own reviews!");
+  }
+
+  return await prisma.review.delete({
+    where: { id: reviewId },
+  });
+};
+
 export const ReviewService = {
   createReview,
   getMyReceivedReviews,
@@ -196,4 +214,5 @@ export const ReviewService = {
   getPublicReviews,
   getMyGivenReviews,
   updateReview,
+  deleteReview
 };

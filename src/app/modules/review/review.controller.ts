@@ -68,10 +68,27 @@ const updateReview = catchAsync
       data: result,
     });
   });
+
+const deleteReview = catchAsync
+  (async (req: Request & { user?: IJWTPayload }, res: Response) => {
+    const user = req.user as IJWTPayload;
+    const reviewId = req.params.id;
+    const result = await ReviewService.deleteReview(user, reviewId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Review deleted successfully!",
+      data: result,
+    });
+  });
+
+
 export const ReviewController = {
   createReview,
   getMyReviews,
   getPublicReviews,
   getMyGivenReviews,
   updateReview,
+  deleteReview
 }; 
