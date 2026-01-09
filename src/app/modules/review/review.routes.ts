@@ -5,6 +5,7 @@ import { UserRole } from "../../../generated/prisma/enums";
 
 const router = express.Router();
 
+router.get("/given", auth(UserRole.TRAVELER), ReviewController.getMyGivenReviews);
 router.post("/", auth(UserRole.TRAVELER), ReviewController.createReview);
 router.get("/me", auth(UserRole.TRAVELER), ReviewController.getMyReviews);
 router.get("/public", ReviewController.getPublicReviews);

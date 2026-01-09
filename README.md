@@ -194,11 +194,11 @@ Here are some exciting features and improvements planned to make **TravelSync** 
 | **Trip Expenses Sharing**      | Simple tool to split costs among buddies                                   | Low      |
 | **Partner Integrations**       | Affiliate links with booking.com, Airbnb, flight APIs                      | Low      |
 
-## These enhancements will transform TravelSync from a great matching platform into a complete **social travel ecosystem**. Contributions and ideas are always welcome! 🌍✨
+### These enhancements will transform TravelSync from a great matching platform into a complete **social travel ecosystem**. Contributions and ideas are always welcome! 🌍✨
 
 ---
 
-### 👨‍💻 Developed By
+## 👨‍💻 Developed By
 
 **Purnendu Sarkar**  
 Full-Stack Developer | Travel Enthusiast ✈️  

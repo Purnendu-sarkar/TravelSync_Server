@@ -3,6 +3,7 @@ import { PlanStatus, RequestStatus } from "../../../generated/prisma/client";
 import { IJWTPayload } from "../../types/common";
 import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status";
+import { UpdateReviewInput } from "./review.interface";
 
 const createReview = async (user: IJWTPayload, payload: { travelPlanId: string; revieweeId: string; rating: number; comment?: string }) => {
   const traveler = await prisma.traveler.findUniqueOrThrow({
@@ -136,10 +137,38 @@ const getPublicReviews = async (options: { limit: number }) => {
   });
 };
 
+const getMyGivenReviews = async (user: IJWTPayload) => {
+  const traveler = await prisma.traveler.findUniqueOrThrow({
+    where: { email: user.email },
+  });
+
+  const reviews = await prisma.review.findMany({
+    where: { reviewerId: traveler.id },
+    include: {
+      reviewee: { select: { name: true, profilePhoto: true } },
+      travelPlan: { select: { destination: true, startDate: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const avgRating = reviews.length > 0
+    ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1))
+    : 0;
+
+  return {
+    avgRating,
+    totalReviews: reviews.length,
+    reviews,
+  };
+};
+
+
+
 export const ReviewService = {
   createReview,
   getMyReceivedReviews,
   getTravelerReviewSummary,
   getReviewsForTravelPlan,
-  getPublicReviews
+  getPublicReviews,
+  getMyGivenReviews,
 };
