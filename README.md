@@ -1,7 +1,7 @@
 # TravelSync – Backend Server (Travel Buddy & Meetup Platform)
 
 **Backend Repository:** https://github.com/Purnendu-sarkar/TravelSync_Server  
-**Live API Base URL:** https://travelsync-server.onrender.com/api/v1  
+**Live API Base URL:** https://travelsync-server.onrender.com  
 **Frontend Repository:** https://github.com/Purnendu-sarkar/TravelSync_Frontend  
 **Live Website:** https://travel-sync-frontend-sandy.vercel.app  
 **Video Demonstration:** https://drive.google.com/file/d/1eSukxKPAZqCQuMQUTRPsZ_uTkXGCYYOr/view?usp=sharing

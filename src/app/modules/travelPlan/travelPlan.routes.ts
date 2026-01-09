@@ -5,9 +5,9 @@ import { UserRole } from "../../../generated/prisma/enums";
 import { TravelPlanValidation } from "./travelPlan.validation";
 
 const router = express.Router();
-
-router.get("/public", TravelPlanController.getPublicPlans);
 router.get("/", TravelPlanController.getAllFromDB);
+router.get("/public", TravelPlanController.getPublicPlans);
+
 router.get("/match", TravelPlanController.getMatchedTravelPlans);
 
 router.get(
