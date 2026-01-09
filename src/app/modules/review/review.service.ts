@@ -162,7 +162,31 @@ const getMyGivenReviews = async (user: IJWTPayload) => {
   };
 };
 
+const updateReview = async (user: IJWTPayload, reviewId: string, payload: UpdateReviewInput) => {
+  const traveler = await prisma.traveler.findUniqueOrThrow({
+    where: { email: user.email },
+  });
 
+  const review = await prisma.review.findUniqueOrThrow({
+    where: { id: reviewId },
+  });
+
+  if (review.reviewerId !== traveler.id) {
+    throw new ApiError(httpStatus.FORBIDDEN, "You can only update your own reviews!");
+  }
+
+  return await prisma.review.update({
+    where: { id: reviewId },
+    data: {
+      rating: payload.rating,
+      comment: payload.comment,
+    },
+    include: {
+      reviewee: { select: { name: true, profilePhoto: true } },
+      travelPlan: { select: { destination: true } },
+    },
+  });
+};
 
 export const ReviewService = {
   createReview,
@@ -171,4 +195,5 @@ export const ReviewService = {
   getReviewsForTravelPlan,
   getPublicReviews,
   getMyGivenReviews,
+  updateReview,
 };

@@ -55,10 +55,23 @@ const getMyGivenReviews = catchAsync
     });
   });
 
+const updateReview = catchAsync
+  (async (req: Request & { user?: IJWTPayload }, res: Response) => {
+    const user = req.user as IJWTPayload;
+    const reviewId = req.params.id;
+    const result = await ReviewService.updateReview(user, reviewId, req.body);
 
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Review updated successfully!",
+      data: result,
+    });
+  });
 export const ReviewController = {
   createReview,
   getMyReviews,
   getPublicReviews,
   getMyGivenReviews,
+  updateReview,
 }; 
